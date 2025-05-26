@@ -3,6 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
+import { FleetModule } from './fleet/fleet.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { MongooseModule } from '@nestjs/mongoose';
       useFactory: (configService:ConfigService)=>({uri: configService.get("ATLAS_ADDRESS")}),
       inject:[ConfigService]
     }),
+    FleetModule,
   ],
   controllers: [AppController],
   providers: [AppService],
