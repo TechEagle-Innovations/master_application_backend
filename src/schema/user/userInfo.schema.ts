@@ -1,0 +1,51 @@
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Document } from 'mongoose';
+
+export type UserInfoDocument = UserInfo & Document;
+
+@Schema()
+export class UserInfo {
+  @Prop({ required: true, unique: true })
+  useremail: string;
+
+  @Prop({ required: true })
+  password: string;
+
+  @Prop({ default: '' })
+  phone_no: string;
+
+  @Prop({ default: '' })
+  gender: string;
+
+  @Prop({ type: Date, default: '' })
+  date_birth: Date;
+
+  @Prop({ required: true })
+  userName: string;
+
+  @Prop({ type: [Object], default: [] })
+  cart: any[];
+
+  @Prop({ type: [Object], default: [] })
+  order: any[];
+
+  @Prop({ required: true })
+  location: string;
+
+  @Prop({ default: '' })
+  delivery_location: string;
+
+  @Prop({ default: 'Not Granted' })
+  permission: string;
+
+  @Prop({ default: false })
+  isApproved: boolean;
+
+  @Prop({ default: 'incomplete' })
+  verification: string;
+
+  @Prop({ default: false })
+  active: boolean;
+}
+
+export const UserInfoSchema = SchemaFactory.createForClass(UserInfo);
