@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { FleetModule } from './fleet/fleet.module';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -14,10 +15,15 @@ import { FleetModule } from './fleet/fleet.module';
     // MongooseModule.forRoot("mongodb://localhost/testLocation"),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: (configService:ConfigService)=>({uri: configService.get("ATLAS_ADDRESS")}),
+      useFactory: async (configService: ConfigService) => ({
+        uri: configService.get<string>('MONGO_URI'),
+        retryAttempts: 5,
+        retryDelay: 1000,
+      }),
       inject:[ConfigService]
     }),
     FleetModule,
+    UserModule,
   ],
   controllers: [AppController],
   providers: [AppService],
