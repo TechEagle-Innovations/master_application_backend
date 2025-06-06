@@ -24,11 +24,6 @@ export class UserInfo {
   @Prop({ required: true })
   userName: string;
 
-  @Prop({ type: [Object], default: [] })
-  cart: any[];
-
-  @Prop({ type: [Object], default: [] })
-  order: any[];
 
   @Prop({ required: true })
   location: string;
@@ -49,7 +44,16 @@ export class UserInfo {
   active: boolean;
 
   @Prop({ default: 'techeagle'})
-  clientId:string;
+  clientId: string;
+
+  @Prop()
+  resetPasswordToken?: string;
+
+  @Prop()
+  resetPasswordExpires?: Date;
+
+  @Prop()
+  refreshToken?: string;
 
   @Prop({ 
     type: String, 

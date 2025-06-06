@@ -3,6 +3,9 @@ import { AuthService } from './auth.service';
 import { UserService } from './user.service';
 import { LoginDto } from './dto/login.dto';
 import { CreateUserDto } from './dto/create-user.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RolesGuard } from './guards/roles.guard';
 import { Roles } from './decorators/roles.decorator';
@@ -28,13 +31,35 @@ export class UserController {
     return this.userService.createUser(createUserDto);
   }
 
-    // Example of a protected route without role restrictions
+  @Post('refresh-token')
+  @HttpCode(HttpStatus.OK)
+  async refreshToken(@Body() refreshTokenDto: RefreshTokenDto) {
+    return this.authService.refreshToken(refreshTokenDto.refreshToken);
+  }
+
+  @Post('forgot-password')
+  @HttpCode(HttpStatus.OK)
+  async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
+    return this.authService.generatePasswordResetToken(forgotPasswordDto.useremail);
+  }
+
+  @Post('reset-password')
+  @HttpCode(HttpStatus.OK)
+  async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
+    await this.authService.resetPassword(
+      resetPasswordDto.token,
+      resetPasswordDto.newPassword
+    );
+    return { message: 'Password has been reset successfully' };
+  }
+
   @UseGuards(JwtAuthGuard)
   @Get('profile')
   getProfile() {
     return { message: 'This is a protected route accessible to all authenticated users' };
   }
-//   // Protected route for creating L3 users - only L3 users can create other L3 users
+
+  // Example of a protected route without role restrictions
 //   @Post('register/l3')
 //   @UseGuards(JwtAuthGuard, RolesGuard)
 //   @Roles(UserDesignation.L3)
@@ -71,6 +96,4 @@ export class UserController {
 //   getCommonDashboard() {
 //     return { message: 'Welcome to Common Dashboard' };
 //   }
-
-
 }
