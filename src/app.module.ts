@@ -11,17 +11,17 @@ import { DroneModule } from './drone/drone.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: './.env',
+      envFilePath: '.env',
     }),
     // MongooseModule.forRoot("mongodb://localhost/testLocation"),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => {
         const uri = configService.get<string>('MONGO_URI');
-        console.log('🔍 MONGO_URI from configService:', uri);
+        //console.log('MONGO_URI from configService:', uri);
         if (!uri) {
           throw new Error(
-            '❌ MONGO_URI is not defined in the environment variables.',
+            'MONGO_URI is not defined in the environment variables.',
           );
         }
         return {

@@ -19,9 +19,11 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 
     try {
       const payload = this.jwtService.verify(token);
+      console.log('JWT payload:', payload);
       request.user = payload;
       return true;
     } catch (error) {
+      console.error('JWT verification error:', error);
       throw new UnauthorizedException('Invalid token');
     }
   }

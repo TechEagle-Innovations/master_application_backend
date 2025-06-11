@@ -1,15 +1,16 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { DroneService } from './drone.service';
-import { CreateDroneDto } from './dto/create-drone.dto';
-import { UpdateDroneDto } from './dto/update-drone.dto';
+import {  GetAllDroneDto } from './dto/get-drone.dto';
+import { JwtAuthGuard } from 'src/user/guards/jwt-auth.guard';
 
 @Controller('drone')
 export class DroneController {
   constructor(private readonly droneService: DroneService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Get('all-drone')
-  create(@Body() createDroneDto: CreateDroneDto) {
-    return this.droneService.create(createDroneDto);
+  allDrone(@Body() getAllDroneDto: GetAllDroneDto) {
+    return this.droneService.allDrone(getAllDroneDto);
   }
 
   @Get()
@@ -22,10 +23,6 @@ export class DroneController {
     return this.droneService.findOne(+id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateDroneDto: UpdateDroneDto) {
-    return this.droneService.update(+id, updateDroneDto);
-  }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
