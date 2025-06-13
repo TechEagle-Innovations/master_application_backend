@@ -4,7 +4,11 @@ import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { FleetModule } from './fleet/fleet.module';
+<<<<<<< HEAD
 import { UserModule } from './user/user.module';
+=======
+import { BatteryModule } from './battery/battery.module';
+>>>>>>> d0a559ea4559c800766f2adbf81797a1818b69db
 
 @Module({
   imports: [
@@ -23,7 +27,11 @@ import { UserModule } from './user/user.module';
       inject:[ConfigService]
     }),
     FleetModule,
+<<<<<<< HEAD
     UserModule,
+=======
+    BatteryModule,
+>>>>>>> d0a559ea4559c800766f2adbf81797a1818b69db
   ],
   controllers: [AppController],
   providers: [AppService],
