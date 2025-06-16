@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Req } from '@nestjs/common';
 import { DroneService } from './drone.service';
 import {  GetAllDroneDto } from './dto/get-drone.dto';
 import { JwtAuthGuard } from 'src/user/guards/jwt-auth.guard';
+import { Request } from 'express';
 
 @Controller('drone')
 export class DroneController {
@@ -9,23 +10,15 @@ export class DroneController {
 
   @UseGuards(JwtAuthGuard)
   @Get('all-drone')
-  allDrone(@Body() getAllDroneDto: GetAllDroneDto) {
+  allDrone(@Query() getAllDroneDto: GetAllDroneDto) {
     return this.droneService.allDrone(getAllDroneDto);
   }
 
-  @Get()
-  findAll() {
-    return this.droneService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.droneService.findOne(+id);
+  @UseGuards(JwtAuthGuard)
+  @Get('all-drones-at-hub')
+  allDronesAtHub(@Req() req: Request) {
+    return this.droneService.allCommissionedDronesAtHub(req);
   }
 
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.droneService.remove(+id);
-  }
 }

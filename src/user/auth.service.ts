@@ -42,11 +42,12 @@ export class AuthService {
       sub: user._id,
       userName: user.userName,
       permission: user.permission,
-      designation: user.designation
+      designation: user.designation,
+      location: user.location
     };
 
     // Generate access token and refresh token
-    const accessToken = this.jwtService.sign(payload, { expiresIn: '15m' });
+    const accessToken = this.jwtService.sign(payload, { expiresIn: '7d' });
     const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
 
     // Save refresh token in the database
