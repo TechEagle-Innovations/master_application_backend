@@ -5,6 +5,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { FleetModule } from './fleet/fleet.module';
 import { UserModule } from './user/user.module';
+import { BatteryModule } from './battery/battery.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { UserModule } from './user/user.module';
     }),
     FleetModule,
     UserModule,
+    BatteryModule,
   ],
   controllers: [AppController],
   providers: [AppService],
