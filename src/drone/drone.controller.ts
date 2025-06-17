@@ -20,5 +20,10 @@ export class DroneController {
     return this.droneService.allCommissionedDronesAtHub(req);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Get('inFlight-drones-at-hub')
+  inFlightDronesAtHub(@Req() req: Request) {
+    return this.droneService.allInFlightDronesAtHub(req);
+  }
 
 }
