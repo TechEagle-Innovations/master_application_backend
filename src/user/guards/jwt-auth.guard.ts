@@ -13,12 +13,14 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
    canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
     const request = context.switchToHttp().getRequest();
     const token = this.extractTokenFromHeader(request);
+    // console.log("token",token);
 
     if (!token) {
       throw new UnauthorizedException('No token provided');
     }
 
     try {
+      console.log("token",token);
       const payload = this.jwtService.verify(token);
       
       console.log('JWT payload:', payload);

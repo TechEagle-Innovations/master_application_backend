@@ -5,6 +5,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { FleetModule } from './fleet/fleet.module';
 import { UserModule } from './user/user.module';
+import { BatteryModule } from './battery/battery.module';
+import { NodeModule } from './node/node.module';
 import { DroneModule } from './drone/drone.module';
 
 @Module({
@@ -34,6 +36,8 @@ import { DroneModule } from './drone/drone.module';
     }),
     FleetModule,
     UserModule,
+    BatteryModule,
+    NodeModule,
     DroneModule,
   ],
   controllers: [AppController],
