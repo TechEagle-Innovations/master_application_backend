@@ -2,6 +2,7 @@ import { Injectable, ExecutionContext, UnauthorizedException } from '@nestjs/com
 import { AuthGuard } from '@nestjs/passport';
 import { JwtService } from '@nestjs/jwt';
 import { Observable } from 'rxjs';
+import { UserService } from '../user.service';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
@@ -9,20 +10,24 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     super();
   }
 
-  canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
+   canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
     const request = context.switchToHttp().getRequest();
     const token = this.extractTokenFromHeader(request);
+    // console.log("token",token);
 
     if (!token) {
       throw new UnauthorizedException('No token provided');
     }
 
     try {
+      console.log("token",token);
       const payload = this.jwtService.verify(token);
-      console.log('payload', payload);
+      
+      console.log('JWT payload:', payload);
       request.user = payload;
       return true;
     } catch (error) {
+      console.error('JWT verification error:', error);
       throw new UnauthorizedException('Invalid token');
     }
   }
