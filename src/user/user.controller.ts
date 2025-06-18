@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards, Get, UnauthorizedException, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Get, UnauthorizedException, HttpCode, HttpStatus, Request } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UserService } from './user.service';
 import { LoginDto } from './dto/login.dto';
@@ -7,9 +7,8 @@ import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { RolesGuard } from './guards/roles.guard';
-import { Roles } from './decorators/roles.decorator';
-import { UserDesignation } from './enums/user-designation.enum';
+import { VerifyOtpDto } from './dto/verify-otp.dto';
+import { LogoutDto } from './dto/logout.dto';
 
 @Controller('user')
 export class UserController {
@@ -40,17 +39,31 @@ export class UserController {
   @Post('forgot-password')
   @HttpCode(HttpStatus.OK)
   async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
-    return this.authService.generatePasswordResetToken(forgotPasswordDto.useremail);
+    console.log('forgotPasswordDto', forgotPasswordDto);
+    return this.authService.generatePasswordResetOtp(forgotPasswordDto.email);
+  }
+
+  @Post('verify-otp')
+  @HttpCode(HttpStatus.OK)
+  async verifyOtp(@Body() verifyOtpDto: VerifyOtpDto) {
+    return this.authService.verifyPasswordResetOtp(verifyOtpDto.email, verifyOtpDto.otp);
   }
 
   @Post('reset-password')
   @HttpCode(HttpStatus.OK)
   async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
-    await this.authService.resetPassword(
-      resetPasswordDto.token,
+    await this.authService.resetPasswordWithOtp(
+      resetPasswordDto.email,
       resetPasswordDto.newPassword
     );
     return { message: 'Password has been reset successfully' };
+  } 
+
+  @UseGuards(JwtAuthGuard)
+  @Post('logout')
+  @HttpCode(HttpStatus.OK)
+  async logout(@Request() req) {
+    return this.authService.logout(req.user.sub);
   }
 
   @UseGuards(JwtAuthGuard)

@@ -4,31 +4,47 @@ import { Model } from 'mongoose';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import { CreateNodeDto } from './dto/create-node.dto';
-import { Node, NodeDocument } from './schemas/node.schema';
+import { LocationInfo } from 'src/schema/location/locationInfo.schema';
+import { UpdateNodeDto } from './dto/update-node.dto';
 
 @Injectable()
 export class NodeService {
-  private readonly clearSkyApiKey: string;
   private readonly clearSkyBaseUrl: string;
 
   constructor(
-    @InjectModel(Node.name) private nodeModel: Model<NodeDocument>,
+    @InjectModel(LocationInfo.name) private nodeModel: Model<LocationInfo>,
     private configService: ConfigService,
   ) {
-    this.clearSkyApiKey = this.configService.get<string>('CLEARSKY_API_KEY');
     this.clearSkyBaseUrl = this.configService.get<string>('CLEARSKY_API_URL');
   }
 
-  async create(createNodeDto: CreateNodeDto): Promise<Node> {
+  async create(createNodeDto: CreateNodeDto) {
     const createdNode = new this.nodeModel(createNodeDto);
     return createdNode.save();
   }
 
+  findAll() {
+    return this.nodeModel.find();
+  }
+
+  findOne(id: number) {
+    return this.nodeModel.findById(id);
+  }
+  
+  update(id: number, updateNodeDto: UpdateNodeDto) {
+    return `This action updates a #${id} node`;
+  }
+
+  remove(id: number) {
+    return `This action removes a #${id} node`;
+  }
+
   async fetchClearSkyLocationData() {
+    const authToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InByYW5qYWxpLnNpbmhhQHRlY2hlYWdsZS5pbiIsImlhdCI6MTc0OTgyMTAxMSwiZXhwIjoxNzQ5ODMxODExfQ.OH5_CCTP8JKoCzLKwXSbm-H9A30BwLcQMR9q3blagA0";
     try {
-      const response = await axios.get(`${this.clearSkyBaseUrl}/locations`, {
+      const response = await axios.get(`${this.clearSkyBaseUrl}/location/get_allLocation`, {
         headers: {
-          'Authorization': `Bearer ${this.clearSkyApiKey}`,
+          'Authorization': authToken,
           'Content-Type': 'application/json',
         },
       });

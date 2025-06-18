@@ -46,14 +46,23 @@ export class UserInfo {
   @Prop({ default: 'techeagle'})
   clientId: string;
 
-  @Prop()
+  @Prop({default: undefined})
   resetPasswordToken?: string;
 
-  @Prop()
+  @Prop({default: undefined})
   resetPasswordExpires?: Date;
 
   @Prop()
   refreshToken?: string;
+
+  @Prop({ default: undefined })
+  resetPasswordOtp?: string;
+
+  @Prop({ default: undefined })
+  resetPasswordOtpExpires?: Date;
+
+  @Prop({ default: false })
+  resetPasswordOtpVerified?: boolean;
 
   @Prop({ 
     type: String, 

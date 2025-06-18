@@ -1,0 +1,1145 @@
+{
+  "status": "success",
+  "message": "Location Fetch Succesfully",
+  "data": [
+    {
+      "flags": {
+        "customerOrder": true,
+        "selfOrder": true
+      },
+      "ref_microservice_id": "",
+      "_id": "63932c7ab1cab628335ae969",
+      "latitude": 25.6476028,
+      "longitude": 90.326457,
+      "location_name": "Jengjal",
+      "zone_id": "639c5fe56c0ca3060e173c0c",
+      "country_id": "639c35f98fa712051b926a36",
+      "state_id": "639c60e36c0ca3060e173c24",
+      "state": "Meghalaya",
+      "district": "West Garo Hills",
+      "address": "Jengjal Meghalaya 794109",
+      "pin_code": 794109,
+      "tag_name": "HUB",
+      "employee": [],
+      "locationArray": [
+        {
+          "location_id": "63930f82865ec3abed90bc1b",
+          "location_name": "Mendipathar PHC"
+        },
+        {
+          "location_id": "639310eb865ec3abed90bc1f",
+          "location_name": "Pedaldoba PHC"
+        },
+        {
+          "location_id": "639311e2865ec3abed90bc23",
+          "location_name": "Nongalbibra PHC"
+        },
+        {
+          "location_id": "6393126c865ec3abed90bc27",
+          "location_name": "Shallang PHC"
+        },
+        {
+          "location_id": "639312ff865ec3abed90bc2b",
+          "location_name": "Samanda PHC"
+        },
+        {
+          "location_id": "64d0895c3ea096f727fb9121",
+          "location_name": "Gabil PHC"
+        },
+        {
+          "location_id": "64d094523cb3ee07cf92adc8",
+          "location_name": " Songsak PHC"
+        },
+        {
+          "location_id": "64d095163cb3ee07cf92add7",
+          "location_name": "Dadenggre CHC"
+        },
+        {
+          "location_id": "6614b482eedca0a1a5df9bf0",
+          "location_name": "Dobu PHC"
+        },
+        {
+          "location_id": "661b551073054244262980ff",
+          "location_name": "Manikganj"
+        },
+        {
+          "location_id": "6690e358349f682b7dfe0137",
+          "location_name": "Sualmeri PHC"
+        },
+        {
+          "location_id": "66c83f5d3aad3df7ce7e4500",
+          "location_name": "Bansinggre PHC"
+        },
+        {
+          "location_id": "6787698ec375be45b3e3794e",
+          "location_name": "Chidekgra Sub Center"
+        },
+        {
+          "location_id": "6788c2b9c375be45b3e38714",
+          "location_name": "CHIADING Sub Centre"
+        },
+        {
+          "location_id": "678a227ec375be45b3e3980e",
+          "location_name": "BOLDORENGGRE Sub Centre"
+        },
+        {
+          "location_id": "678dfac0c375be45b3e3c08b",
+          "location_name": "Gokolgre Sub  Center"
+        },
+        {
+          "location_id": "678f44e6c375be45b3e3d819",
+          "location_name": "Snaglre Sub Center"
+        },
+        {
+          "location_id": "67909842c375be45b3e3f884",
+          "location_name": "Edenbari Sub Center"
+        },
+        {
+          "location_id": "6791e05ec375be45b3e401d7",
+          "location_name": "Mangakgre Sub Centre"
+        },
+        {
+          "location_id": "67974547035ca46302637a97",
+          "location_name": "Rombagre Sub-Center"
+        },
+        {
+          "location_id": "680b6c2e318f7dddc2f002b7",
+          "location_name": "Tosekgre SC"
+        }
+      ],
+      "__v": 0,
+      "manager": {
+        "managerName": "Deep Shukla",
+        "managerEmail": "deependra.shukla@techeagle.in",
+        "deployedBy": "dinesh.borse@techeagle.in",
+        "previousManager": "rahul.yadav@techeagle.in"
+      }
+    },
+    {
+      "all_summary": {
+        "inventory": 0,
+        "order": 0
+      },
+      "flags": {
+        "customerOrder": false,
+        "selfOrder": true
+      },
+      "ref_microservice_id": "",
+      "_id": "65e06baa3e4ce03cdb92f18e",
+      "latitude": 30.7647192,
+      "longitude": 76.77783,
+      "location_name": "Bilaspur",
+      "zone_id": "639c5f226c0ca3060e173bee",
+      "country_id": "639c35f98fa712051b926a36",
+      "state_id": "639c6e7ce364f00cff86497b",
+      "state": "Himachal Pradesh",
+      "district": "Bilaspur",
+      "address": "AIIMS Bilaspur, Kothipura, Changar Palasia, BILASPUR (HP), HIMACHAL PRADESH-174001, India",
+      "pin_code": 174001,
+      "tag_name": "HUB",
+      "employee": [
+        {
+          "employeeName": "himanshu.raturi@techeagle.in"
+        },
+        {
+          "employeeName": "subhash.kumar@techeagle.in"
+        }
+      ],
+      "locationArray": [
+        {
+          "location_id": "669a28e8772df389cfe3bb97",
+          "location_name": "solon"
+        },
+        {
+          "location_id": "66ab8f7c4c0251c8aa50c964",
+          "location_name": "AIIMS Bilaspur"
+        },
+        {
+          "location_id": "66ab92e54c0251c8aa50c9b9",
+          "location_name": "Kanda"
+        }
+      ],
+      "__v": 0,
+      "manager": {
+        "managerName": "",
+        "managerEmail": "",
+        "deployedBy": "pranjali.sinha@techeagle.in",
+        "previousManager": "subhash.kumar@techeagle.in"
+      }
+    },
+    {
+      "all_summary": {
+        "inventory": 0,
+        "order": 0
+      },
+      "flags": {
+        "customerOrder": false,
+        "selfOrder": true
+      },
+      "ref_microservice_id": "",
+      "_id": "65e6e60c9c75b119083c9530",
+      "latitude": 30.0810599,
+      "longitude": 78.2859485,
+      "location_name": "Rishikesh",
+      "zone_id": "639c5f536c0ca3060e173bf4",
+      "country_id": "639c35f98fa712051b926a36",
+      "state_id": "639c6ecae364f00cff864993",
+      "state": "Uttrakhand",
+      "district": "Dehradun",
+      "address": "AIIMS Rishikesh, All India Institute of Medical Sciences, Rishikesh, Uttarakhand, 249203.",
+      "pin_code": 249203,
+      "tag_name": "HUB",
+      "employee": [
+        {
+          "employeeName": "vishwesh.kapoor@techeagle.in"
+        },
+        {
+          "employeeName": "aman.kumar@techeagle.in"
+        }
+      ],
+      "locationArray": [
+        {
+          "location_id": "6616786d0ea790d0f3e7ad3a",
+          "location_name": "Chamba"
+        },
+        {
+          "location_id": "661678a20ea790d0f3e7ad5d",
+          "location_name": "New Tehri"
+        },
+        {
+          "location_id": "661678d20ea790d0f3e7ad77",
+          "location_name": "Fakot"
+        },
+        {
+          "location_id": "661678f50ea790d0f3e7ad91",
+          "location_name": "JAIRAM AASHRAM"
+        },
+        {
+          "location_id": "669c98e27a1379a4b26f5b62",
+          "location_name": "Mohanchatti"
+        }
+      ],
+      "__v": 0,
+      "manager": {
+        "managerName": "Aman Kumar Gautam",
+        "managerEmail": "aman.kumar@techeagle.in",
+        "deployedBy": "pranjali.sinha@techeagle.in",
+        "previousManager": "gaurav@techeagle.in"
+      }
+    },
+    {
+      "all_summary": {
+        "inventory": 0,
+        "order": 0
+      },
+      "flags": {
+        "customerOrder": false,
+        "selfOrder": true
+      },
+      "ref_microservice_id": "",
+      "_id": "65eac3286a599653eac38d62",
+      "latitude": 28.283712,
+      "longitude": 76.775756,
+      "location_name": "Gurugram",
+      "zone_id": "639c5f226c0ca3060e173bee",
+      "country_id": "639c35f98fa712051b926a36",
+      "state_id": "639c6e92e364f00cff864987",
+      "state": "Haryana",
+      "district": "Gurugram",
+      "address": "Haryana",
+      "pin_code": 122002,
+      "tag_name": "HUB",
+      "employee": [
+        {
+          "employeeName": "arabinda@techeagle.in"
+        },
+        {
+          "employeeName": "yash.sharma@techeagle.in"
+        },
+        {
+          "employeeName": "yash.sharma@techeagle.in"
+        },
+        {
+          "employeeName": "yash.sharma@techeagle.in"
+        },
+        {
+          "employeeName": "yash.sharma@techeagle.in"
+        },
+        {
+          "employeeName": "arshdeep@techeagle.in"
+        },
+        {
+          "employeeName": "rahul.yadav@techeagle.in"
+        },
+        {
+          "employeeName": "arsalan.beig@techeagle.in"
+        }
+      ],
+      "locationArray": [
+        {
+          "location_id": "66ab61d94c0251c8aa50c6b4",
+          "location_name": "Testing 1 "
+        },
+        {
+          "location_id": "66e80616c4748f2ca7b91946",
+          "location_name": "Old Rao"
+        }
+      ],
+      "__v": 0,
+      "manager": {
+        "managerName": "",
+        "managerEmail": "",
+        "deployedBy": "yash.sharma@techeagle.in",
+        "previousManager": "arabinda.sangiri@techeagle.in"
+      }
+    },
+    {
+      "all_summary": {
+        "inventory": 3,
+        "order": 0
+      },
+      "flags": {
+        "customerOrder": true,
+        "selfOrder": true
+      },
+      "ref_microservice_id": "",
+      "_id": "65f15b99a46eccde40b1d966",
+      "latitude": 26.2521904,
+      "longitude": 91.6965532,
+      "location_name": "Guwahati",
+      "zone_id": "639c5fe56c0ca3060e173c0c",
+      "country_id": "639c35f98fa712051b926a36",
+      "state_id": "639c609e6c0ca3060e173c12",
+      "state": "Assam",
+      "district": "Guwahati",
+      "address": "Silbharal Changsari, Guwahati, Assam",
+      "pin_code": 781101,
+      "tag_name": "HUB",
+      "employee": [
+        {
+          "employeeName": "abhishek.meena@techeagle.in"
+        },
+        {
+          "employeeName": "ankit.thakur@techeagle.in"
+        }
+      ],
+      "locationArray": [
+        {
+          "location_id": "6683bd9be33e3fe878d5a67a",
+          "location_name": "Goroimari"
+        },
+        {
+          "location_id": "6704eeda5f92d448b03abb6b",
+          "location_name": "Batahidia"
+        },
+        {
+          "location_id": "6704ef7b5f92d448b03abbbf",
+          "location_name": "Bongalpara PHC"
+        }
+      ],
+      "__v": 0,
+      "manager": {
+        "managerName": "ankitsingh",
+        "managerEmail": "ankit.thakur@techeagle.in",
+        "deployedBy": "dinesh.borse@techeagle.in",
+        "previousManager": "ankit.thakur@techeagle.in"
+      }
+    },
+    {
+      "all_summary": {
+        "inventory": 0,
+        "order": 0
+      },
+      "flags": {
+        "customerOrder": false,
+        "selfOrder": true
+      },
+      "ref_microservice_id": "",
+      "_id": "67603f7acb95675361fc63f3",
+      "latitude": 30.087826,
+      "longitude": 78.383743,
+      "location_name": "Holon Rishikesh",
+      "zone_id": "639c5f536c0ca3060e173bf4",
+      "country_id": "639c35f98fa712051b926a36",
+      "state_id": "639c6ecae364f00cff864993",
+      "state": "Uttrakhand",
+      "district": "Pauri Garhwal",
+      "address": "Holon 1 Takeoff, Gattughat, Pauri Garhwal, Uttrakhand",
+      "pin_code": 249304,
+      "tag_name": "HUB",
+      "employee": [],
+      "manager": {
+        "managerName": "",
+        "managerEmail": "",
+        "deployedBy": "pranjali.sinha@techeagle.in",
+        "previousManager": "aman.kumar@techeagle.in"
+      },
+      "locationArray": [],
+      "__v": 0
+    },
+    {
+      "all_summary": {
+        "inventory": 0,
+        "order": 0
+      },
+      "flags": {
+        "selfOrder": true,
+        "customerOrder": false
+      },
+      "_id": "683ea85716be9468a57d2375",
+      "latitude": 28.27219404270329,
+      "longitude": 76.873068887442,
+      "location_name": "Myntra Bilaspur FC",
+      "ref_microservice_id": "",
+      "zone_id": "639c5fe56c0ca3060e173c0c",
+      "country_id": "639c35f98fa712051b926a36",
+      "state_id": "639c6e92e364f00cff864987",
+      "state": "Haryana",
+      "district": "Gurugram",
+      "address": "Myntra Bilaspur FC, Gurugram, Haryana 122502",
+      "pin_code": 122502,
+      "tag_name": "HUB2",
+      "employee": [
+        {
+          "employeeName": "tech@techeagle.in"
+        },
+        {
+          "employeeName": "prince.kumar@techeagle.in"
+        }
+      ],
+      "manager": {
+        "managerName": "Prince Kumar",
+        "managerEmail": "prince.kumar@techeagle.in",
+        "deployedBy": "pranjali.sinha@techeagle.in",
+        "previousManager": "prince.kumar@techeagle.in"
+      },
+      "locationArray": [
+        {
+          "location_id": "683ea92016be9468a57d23da",
+          "location_name": "Mapsko Casa Bella"
+        }
+      ],
+      "__v": 0
+    },
+    {
+      "maxFlightTime": 60,
+      "aerialDistance": null,
+      "aerialTime": 60,
+      "_id": "6393126c865ec3abed90bc27",
+      "latitude": 25.530009648762853,
+      "longitude": 90.8591667000106,
+      "location_name": "Shallang PHC",
+      "state": "Meghalaya",
+      "district": "Shallang",
+      "address": "Shallang PHC Meghalaya 793119",
+      "pin_code": 793119,
+      "tag_name": "L4",
+      "__v": 0,
+      "country_id": "639c35f98fa712051b926a36",
+      "relatedHubs": "63932c7ab1cab628335ae969",
+      "state_id": "639c60e36c0ca3060e173c24",
+      "zone_id": "639c5fe56c0ca3060e173c0c",
+      "roadDistance": "30Km",
+      "roadTime": "4hrs"
+    },
+    {
+      "maxFlightTime": 60,
+      "aerialDistance": null,
+      "aerialTime": 60,
+      "_id": "639310eb865ec3abed90bc1f",
+      "latitude": 25.970128750000608,
+      "longitude": 90.41011400454289,
+      "location_name": "Pedaldoba PHC",
+      "state": "Meghalaya",
+      "district": "Bajengdoba",
+      "address": "Pedaldoba PHC Meghalaya 794109",
+      "pin_code": 794109,
+      "tag_name": "L2",
+      "__v": 0,
+      "country_id": "639c35f98fa712051b926a36",
+      "relatedHubs": "63932c7ab1cab628335ae969",
+      "state_id": "639c60e36c0ca3060e173c24",
+      "zone_id": "639c5fe56c0ca3060e173c0c",
+      "roadDistance": "62Km",
+      "roadTime": "  1:49:00"
+    },
+    {
+      "maxFlightTime": 60,
+      "aerialDistance": null,
+      "aerialTime": 60,
+      "_id": "639311e2865ec3abed90bc23",
+      "latitude": 25.45279714240047,
+      "longitude": 90.7127885290625,
+      "location_name": "Nongalbibra PHC",
+      "state": "Meghalaya",
+      "district": "Nongalbibra",
+      "address": "Nongalbibra PHC Meghalaya 794114",
+      "pin_code": 794114,
+      "tag_name": "L3",
+      "__v": 0,
+      "country_id": "639c35f98fa712051b926a36",
+      "relatedHubs": "63932c7ab1cab628335ae969",
+      "state_id": "639c60e36c0ca3060e173c24",
+      "zone_id": "639c5fe56c0ca3060e173c0c",
+      "roadDistance": "103Km",
+      "roadTime": "2hr 30min"
+    },
+    {
+      "maxFlightTime": 60,
+      "aerialDistance": null,
+      "aerialTime": 60,
+      "_id": "639312ff865ec3abed90bc2b",
+      "latitude": 25.57566372263245,
+      "longitude": 90.49134440018842,
+      "location_name": "Samanda PHC",
+      "state": "Meghalaya",
+      "district": "Samanda",
+      "address": "Samanda PHC Meghalaya 794112",
+      "pin_code": 793112,
+      "tag_name": "L5",
+      "__v": 0,
+      "country_id": "639c35f98fa712051b926a36",
+      "relatedHubs": "63932c7ab1cab628335ae969",
+      "state_id": "639c60e36c0ca3060e173c24",
+      "zone_id": "639c5fe56c0ca3060e173c0c",
+      "roadDistance": "34Km",
+      "roadTime": "50min"
+    },
+    {
+      "maxFlightTime": 60,
+      "aerialDistance": null,
+      "aerialTime": 60,
+      "_id": "63930f82865ec3abed90bc1b",
+      "latitude": 25.917101231771113,
+      "longitude": 90.64956864386703,
+      "location_name": "Mendipathar PHC",
+      "state": "Meghalaya",
+      "district": "Mendipathar ",
+      "address": "Mendipathar PHC Meghalaya 794110",
+      "pin_code": 794110,
+      "tag_name": "L1",
+      "__v": 0,
+      "country_id": "639c35f98fa712051b926a36",
+      "relatedHubs": "63932c7ab1cab628335ae969",
+      "state_id": "639c60e36c0ca3060e173c24",
+      "zone_id": "639c5fe56c0ca3060e173c0c",
+      "roadDistance": "66Km",
+      "roadTime": " 1:29:00"
+    },
+    {
+      "maxFlightTime": 60,
+      "aerialDistance": null,
+      "aerialTime": 60,
+      "_id": "64d0895c3ea096f727fb9121",
+      "latitude": 25.6999217824048,
+      "longitude": 90.445203276064,
+      "location_name": "Gabil PHC",
+      "country_id": "639c35f98fa712051b926a36",
+      "zone_id": "639c5fe56c0ca3060e173c0c",
+      "state_id": "639c60e36c0ca3060e173c24",
+      "state": "Meghalaya",
+      "relatedHubs": "63932c7ab1cab628335ae969",
+      "district": "East Garo Hills",
+      "address": "Near Gabil Bazar, Gabil Village, Songsak, East Garo Hills, Meghalaya ",
+      "pin_code": 794002,
+      "tag_name": "L6",
+      "__v": 0,
+      "roadDistance": "23Km",
+      "roadTime": "48min"
+    },
+    {
+      "maxFlightTime": 60,
+      "aerialDistance": null,
+      "aerialTime": 60,
+      "_id": "64d094523cb3ee07cf92adc8",
+      "latitude": 25.644668890726,
+      "longitude": 90.6084918281938,
+      "location_name": " Songsak PHC",
+      "country_id": "639c35f98fa712051b926a36",
+      "zone_id": "639c5fe56c0ca3060e173c0c",
+      "state_id": "639c60e36c0ca3060e173c24",
+      "state": "Meghalaya",
+      "relatedHubs": "63932c7ab1cab628335ae969",
+      "district": "East Garo Hills",
+      "address": "Approach To Pwd Road, Songsak, East Garo Hills, Meghalaya.",
+      "pin_code": 794111,
+      "tag_name": "L7",
+      "__v": 0,
+      "roadDistance": "58Km",
+      "roadTime": "1hr 17min"
+    },
+    {
+      "maxFlightTime": 60,
+      "aerialDistance": null,
+      "aerialTime": 60,
+      "_id": "64d095163cb3ee07cf92add7",
+      "latitude": 25.7075145734913,
+      "longitude": 90.1878214380614,
+      "location_name": "Dadenggre CHC",
+      "country_id": "639c35f98fa712051b926a36",
+      "zone_id": "639c5fe56c0ca3060e173c0c",
+      "state_id": "639c60e36c0ca3060e173c24",
+      "state": "Meghalaya",
+      "relatedHubs": "63932c7ab1cab628335ae969",
+      "district": "West Garo Hills",
+      "address": "Near Dadenggre C&rd; Office, Dadenggiri, West Garo Hills, Meghalaya.",
+      "pin_code": 794104,
+      "tag_name": "L8",
+      "__v": 0,
+      "roadDistance": "36Km",
+      "roadTime": "1hr 2min"
+    },
+    {
+      "maxFlightTime": 60,
+      "aerialDistance": null,
+      "aerialTime": 60,
+      "_id": "6614b482eedca0a1a5df9bf0",
+      "latitude": 25.5601115,
+      "longitude": 90.715946,
+      "location_name": "Dobu PHC",
+      "country_id": "639c35f98fa712051b926a36",
+      "zone_id": "639c5fe56c0ca3060e173c0c",
+      "state_id": "639c60e36c0ca3060e173c24",
+      "state": "Meghalaya",
+      "relatedHubs": "63932c7ab1cab628335ae969",
+      "district": "Williamnagar",
+      "address": "Dobu Bazar Football Ground",
+      "pin_code": 79411,
+      "tag_name": "L9",
+      "__v": 0,
+      "roadDistance": "85Km",
+      "roadTime": "1hr 55min"
+    },
+    {
+      "maxFlightTime": 60,
+      "aerialDistance": null,
+      "aerialTime": 60,
+      "_id": "6616786d0ea790d0f3e7ad3a",
+      "latitude": 30.3528965,
+      "longitude": 78.3899621,
+      "location_name": "Chamba",
+      "country_id": "639c35f98fa712051b926a36",
+      "zone_id": "639c5f536c0ca3060e173bf4",
+      "state_id": "639c6ecae364f00cff864993",
+      "state": "Uttrakhand",
+      "relatedHubs": "65e6e60c9c75b119083c9530",
+      "district": "Chamba",
+      "address": "Carmel School Play, Chamba",
+      "pin_code": 249145,
+      "tag_name": "L1",
+      "__v": 0,
+      "roadDistance": null,
+      "roadTime": null
+    },
+    {
+      "maxFlightTime": 60,
+      "aerialDistance": null,
+      "aerialTime": 60,
+      "_id": "661678a20ea790d0f3e7ad5d",
+      "latitude": 30.3806791,
+      "longitude": 78.4370814,
+      "location_name": "New Tehri",
+      "country_id": "639c35f98fa712051b926a36",
+      "zone_id": "639c5f536c0ca3060e173bf4",
+      "state_id": "639c6ecae364f00cff864993",
+      "state": "Uttrakhand",
+      "relatedHubs": "65e6e60c9c75b119083c9530",
+      "district": "New Tehri ",
+      "address": "District Hospital,New Tehri ",
+      "pin_code": 249001,
+      "tag_name": "L2",
+      "__v": 0,
+      "roadDistance": null,
+      "roadTime": null
+    },
+    {
+      "maxFlightTime": 60,
+      "aerialDistance": null,
+      "aerialTime": 60,
+      "_id": "661678d20ea790d0f3e7ad77",
+      "latitude": 30.2285239,
+      "longitude": 78.3516853,
+      "location_name": "Fakot",
+      "country_id": "639c35f98fa712051b926a36",
+      "zone_id": "639c5f536c0ca3060e173bf4",
+      "state_id": "639c6ecae364f00cff864993",
+      "state": "Uttrakhand",
+      "relatedHubs": "65e6e60c9c75b119083c9530",
+      "district": "Fakot",
+      "address": "playground,near FAKOT Hospital",
+      "pin_code": 249175,
+      "tag_name": "L3",
+      "__v": 0,
+      "roadDistance": null,
+      "roadTime": null
+    },
+    {
+      "maxFlightTime": 60,
+      "aerialDistance": null,
+      "aerialTime": 60,
+      "_id": "661678f50ea790d0f3e7ad91",
+      "latitude": 30.104028,
+      "longitude": 78.298427,
+      "location_name": "JAIRAM AASHRAM",
+      "country_id": "639c35f98fa712051b926a36",
+      "zone_id": "639c5f536c0ca3060e173bf4",
+      "state_id": "639c6ecae364f00cff864993",
+      "state": "Uttrakhand",
+      "relatedHubs": "65e6e60c9c75b119083c9530",
+      "district": "Risikesh",
+      "address": "Mayakund,Rishikesh",
+      "pin_code": 249201,
+      "tag_name": "L4",
+      "__v": 0,
+      "roadDistance": null,
+      "roadTime": null
+    },
+    {
+      "maxFlightTime": 60,
+      "aerialDistance": null,
+      "aerialTime": 60,
+      "_id": "661b551073054244262980ff",
+      "latitude": 25.9322873,
+      "longitude": 90.6721245,
+      "location_name": "Manikganj",
+      "country_id": "639c35f98fa712051b926a36",
+      "zone_id": "639c5fe56c0ca3060e173c0c",
+      "state_id": "639c60e36c0ca3060e173c24",
+      "state": "Meghalaya",
+      "relatedHubs": "63932c7ab1cab628335ae969",
+      "district": "Paikan",
+      "address": "Manikganj",
+      "pin_code": 783126,
+      "tag_name": "L10",
+      "__v": 0,
+      "roadDistance": "66Km",
+      "roadTime": "1hr 27min"
+    },
+    {
+      "maxFlightTime": 60,
+      "aerialDistance": null,
+      "aerialTime": 60,
+      "_id": "6683bd9be33e3fe878d5a67a",
+      "latitude": 26.080055,
+      "longitude": 91.279368,
+      "location_name": "Goroimari",
+      "country_id": "639c35f98fa712051b926a36",
+      "zone_id": "639c5fe56c0ca3060e173c0c",
+      "state_id": "639c609e6c0ca3060e173c12",
+      "state": "Assam",
+      "relatedHubs": "65f15b99a46eccde40b1d966",
+      "district": "Kamrup",
+      "address": "Goroimari,Kamrup",
+      "pin_code": 782104,
+      "tag_name": "L1",
+      "__v": 0,
+      "roadDistance": null,
+      "roadTime": null
+    },
+    {
+      "maxFlightTime": 60,
+      "aerialDistance": null,
+      "aerialTime": 60,
+      "_id": "6690e358349f682b7dfe0137",
+      "latitude": 25.962165,
+      "longitude": 90.511317,
+      "location_name": "Sualmeri PHC",
+      "country_id": "639c35f98fa712051b926a36",
+      "zone_id": "639c5fe56c0ca3060e173c0c",
+      "state_id": "639c60e36c0ca3060e173c24",
+      "state": "Meghalaya",
+      "relatedHubs": "63932c7ab1cab628335ae969",
+      "district": "Jetdoba Langapara",
+      "address": "XG66+V2X, Jetdoba Langapara, Meghalaya",
+      "pin_code": 794112,
+      "tag_name": "L11",
+      "__v": 0,
+      "roadDistance": "57Km",
+      "roadTime": "1hr 15min"
+    },
+    {
+      "maxFlightTime": 60,
+      "aerialDistance": null,
+      "aerialTime": 60,
+      "_id": "669a28e8772df389cfe3bb97",
+      "latitude": 30.927770614624023,
+      "longitude": 76.99905395507812,
+      "location_name": "solon",
+      "country_id": "639c35f98fa712051b926a36",
+      "zone_id": "639c5f226c0ca3060e173bee",
+      "state_id": "639c6e86e364f00cff864981",
+      "state": "Punjab",
+      "relatedHubs": "65e06baa3e4ce03cdb92f18e",
+      "district": "solon",
+      "address": "solon",
+      "pin_code": 173211,
+      "tag_name": "L1",
+      "__v": 0,
+      "roadDistance": null,
+      "roadTime": null
+    },
+    {
+      "maxFlightTime": 60,
+      "aerialDistance": null,
+      "aerialTime": 60,
+      "_id": "669c98e27a1379a4b26f5b62",
+      "latitude": 30.063709,
+      "longitude": 78.379074,
+      "location_name": "Mohanchatti",
+      "country_id": "639c35f98fa712051b926a36",
+      "zone_id": "639c5f536c0ca3060e173bf4",
+      "state_id": "639c6ecae364f00cff864993",
+      "state": "Uttrakhand",
+      "relatedHubs": "65e6e60c9c75b119083c9530",
+      "district": "Pauri Garhwal",
+      "address": "Mohanchatti Pauri Garhwal near Sinduri",
+      "pin_code": 249304,
+      "tag_name": "L5",
+      "__v": 0,
+      "roadDistance": null,
+      "roadTime": null
+    },
+    {
+      "maxFlightTime": 60,
+      "aerialDistance": null,
+      "aerialTime": 60,
+      "_id": "66ab8f7c4c0251c8aa50c964",
+      "latitude": 31.2869895,
+      "longitude": 76.7812124,
+      "location_name": "AIIMS Bilaspur",
+      "country_id": "639c35f98fa712051b926a36",
+      "zone_id": "639c5f226c0ca3060e173bee",
+      "state_id": "639c6e86e364f00cff864981",
+      "state": "Punjab",
+      "relatedHubs": "65e06baa3e4ce03cdb92f18e",
+      "district": "Bilaspur",
+      "address": "Changar Palasiyan, Noa, Himachal Pradesh",
+      "pin_code": 174001,
+      "tag_name": "L2",
+      "__v": 0,
+      "roadDistance": null,
+      "roadTime": null
+    },
+    {
+      "maxFlightTime": 60,
+      "aerialDistance": null,
+      "aerialTime": 60,
+      "_id": "66ab92e54c0251c8aa50c9b9",
+      "latitude": 30.9276248,
+      "longitude": 76.9986677,
+      "location_name": "Kanda",
+      "country_id": "639c35f98fa712051b926a36",
+      "zone_id": "639c5f226c0ca3060e173bee",
+      "state_id": "639c6e86e364f00cff864981",
+      "state": "Punjab",
+      "relatedHubs": "65e06baa3e4ce03cdb92f18e",
+      "district": "Solan",
+      "address": "Kanda, Kasauli, Solan, Himachal Pradesh",
+      "pin_code": 173209,
+      "tag_name": "L3",
+      "__v": 0,
+      "roadDistance": null,
+      "roadTime": null
+    },
+    {
+      "maxFlightTime": 60,
+      "aerialDistance": null,
+      "aerialTime": 60,
+      "_id": "66c83f5d3aad3df7ce7e4500",
+      "latitude": 25.5670277,
+      "longitude": 90.4415141,
+      "location_name": "Bansinggre PHC",
+      "country_id": "639c35f98fa712051b926a36",
+      "zone_id": "639c5fe56c0ca3060e173c0c",
+      "state_id": "639c60e36c0ca3060e173c24",
+      "state": "Meghalaya",
+      "relatedHubs": "63932c7ab1cab628335ae969",
+      "district": "East Gari Hills ",
+      "address": "East Gari Hills, Meghalaya",
+      "pin_code": 794113,
+      "tag_name": "L12",
+      "__v": 0,
+      "roadDistance": "41Km",
+      "roadTime": "1hr 10min"
+    },
+    {
+      "maxFlightTime": 60,
+      "aerialDistance": null,
+      "aerialTime": 60,
+      "_id": "66e80616c4748f2ca7b91946",
+      "latitude": 28.384133,
+      "longitude": 76.970108,
+      "location_name": "Old Rao",
+      "country_id": "639c35f98fa712051b926a36",
+      "zone_id": "639c5f226c0ca3060e173bee",
+      "state_id": "639c6e92e364f00cff864987",
+      "state": "Haryana",
+      "relatedHubs": "65eac3286a599653eac38d62",
+      "roadDistance": "53Km",
+      "roadTime": "3",
+      "district": "Pataudi",
+      "address": "Old Rao Hotel, NH 8, Delhi - Jaipur Expy, Near BML, Munjal University, Gurugram, Haryana, India",
+      "pin_code": 123413,
+      "tag_name": "L2",
+      "__v": 0
+    },
+    {
+      "maxFlightTime": 60,
+      "aerialDistance": null,
+      "aerialTime": 60,
+      "_id": "6704eeda5f92d448b03abb6b",
+      "latitude": 26.132629,
+      "longitude": 91.3039673,
+      "location_name": "Batahidia",
+      "country_id": "639c35f98fa712051b926a36",
+      "zone_id": "639c5fe56c0ca3060e173c0c",
+      "state_id": "639c609e6c0ca3060e173c12",
+      "state": "Assam",
+      "relatedHubs": "65f15b99a46eccde40b1d966",
+      "roadDistance": "70Km",
+      "roadTime": "3:50",
+      "district": "Kamrup",
+      "address": "assam ",
+      "pin_code": 781349,
+      "tag_name": "L2",
+      "__v": 0
+    },
+    {
+      "maxFlightTime": 60,
+      "aerialDistance": null,
+      "aerialTime": 60,
+      "_id": "6704ef7b5f92d448b03abbbf",
+      "latitude": 26.234472,
+      "longitude": 91.449194,
+      "location_name": "Bongalpara PHC",
+      "country_id": "639c35f98fa712051b926a36",
+      "zone_id": "639c5fe56c0ca3060e173c0c",
+      "state_id": "639c609e6c0ca3060e173c12",
+      "state": "Assam",
+      "relatedHubs": "65f15b99a46eccde40b1d966",
+      "roadDistance": "33Km",
+      "roadTime": "1",
+      "district": "Kamrup",
+      "address": "Assam ",
+      "pin_code": 781102,
+      "tag_name": "L3",
+      "__v": 0
+    },
+    {
+      "maxFlightTime": 60,
+      "aerialDistance": null,
+      "aerialTime": 60,
+      "_id": "6787698ec375be45b3e3794e",
+      "latitude": 25.594661,
+      "longitude": 90.166452,
+      "location_name": "Chidekgra Sub Center",
+      "country_id": "639c35f98fa712051b926a36",
+      "zone_id": "639c5fe56c0ca3060e173c0c",
+      "state_id": "639c60e36c0ca3060e173c24",
+      "state": "Meghalaya",
+      "relatedHubs": "63932c7ab1cab628335ae969",
+      "roadDistance": "26Km",
+      "roadTime": "1:00:00",
+      "district": "Tura",
+      "address": "Chidekgra Sub Center",
+      "pin_code": 794105,
+      "tag_name": "L13",
+      "__v": 0
+    },
+    {
+      "maxFlightTime": 60,
+      "aerialDistance": null,
+      "aerialTime": 60,
+      "_id": "6788c2b9c375be45b3e38714",
+      "latitude": 25.626259,
+      "longitude": 90.445402,
+      "location_name": "CHIADING Sub Centre",
+      "country_id": "639c35f98fa712051b926a36",
+      "zone_id": "639c5fe56c0ca3060e173c0c",
+      "state_id": "639c60e36c0ca3060e173c24",
+      "state": "Meghalaya",
+      "relatedHubs": "63932c7ab1cab628335ae969",
+      "roadDistance": "18Km",
+      "roadTime": "00:30",
+      "district": "Williamnagar",
+      "address": "CHIADING Sub Centre",
+      "pin_code": 794115,
+      "tag_name": "L14",
+      "__v": 0
+    },
+    {
+      "maxFlightTime": 60,
+      "aerialDistance": null,
+      "aerialTime": 60,
+      "_id": "678a227ec375be45b3e3980e",
+      "latitude": 25.535899,
+      "longitude": 90.242656,
+      "location_name": "BOLDORENGGRE Sub Centre",
+      "country_id": "639c35f98fa712051b926a36",
+      "zone_id": "639c5fe56c0ca3060e173c0c",
+      "state_id": "639c60e36c0ca3060e173c24",
+      "state": "Meghalaya",
+      "relatedHubs": "63932c7ab1cab628335ae969",
+      "roadDistance": "25.5Km",
+      "roadTime": "01:30:00",
+      "district": "Tura",
+      "address": "BOLDORENGGRE Sub Centre",
+      "pin_code": 794001,
+      "tag_name": "L15",
+      "__v": 0
+    },
+    {
+      "maxFlightTime": 60,
+      "aerialDistance": null,
+      "aerialTime": 60,
+      "_id": "678dfac0c375be45b3e3c08b",
+      "latitude": 25.819446,
+      "longitude": 90.445406,
+      "location_name": "Gokolgre Sub  Center",
+      "country_id": "639c35f98fa712051b926a36",
+      "zone_id": "639c5fe56c0ca3060e173c0c",
+      "state_id": "639c60e36c0ca3060e173c24",
+      "state": "Meghalaya",
+      "relatedHubs": "63932c7ab1cab628335ae969",
+      "roadDistance": "30Km",
+      "roadTime": "1:45",
+      "district": "North Garo Hills",
+      "address": "Gokolgre Sub  Center",
+      "pin_code": 794108,
+      "tag_name": "L16",
+      "__v": 0
+    },
+    {
+      "maxFlightTime": 60,
+      "aerialDistance": null,
+      "aerialTime": 60,
+      "_id": "678f44e6c375be45b3e3d819",
+      "latitude": 25.745786,
+      "longitude": 90.401962,
+      "location_name": "Snaglre Sub Center",
+      "country_id": "639c35f98fa712051b926a36",
+      "zone_id": "639c5fe56c0ca3060e173c0c",
+      "state_id": "639c60e36c0ca3060e173c24",
+      "state": "Meghalaya",
+      "relatedHubs": "63932c7ab1cab628335ae969",
+      "roadDistance": "18Km",
+      "roadTime": "00:45",
+      "district": "North Garo Hills",
+      "address": "Snaglre Sub Center",
+      "pin_code": 7941070,
+      "tag_name": "L17",
+      "__v": 0
+    },
+    {
+      "maxFlightTime": 60,
+      "aerialDistance": null,
+      "aerialTime": 60,
+      "_id": "67909842c375be45b3e3f884",
+      "latitude": 25.555228,
+      "longitude": 90.19927,
+      "location_name": "Edenbari Sub Center",
+      "country_id": "639c35f98fa712051b926a36",
+      "zone_id": "639c5fe56c0ca3060e173c0c",
+      "state_id": "639c60e36c0ca3060e173c24",
+      "state": "Meghalaya",
+      "relatedHubs": "63932c7ab1cab628335ae969",
+      "roadDistance": "28.1Km",
+      "roadTime": "1 hr",
+      "district": "West Garo Hills",
+      "address": "Edenbari Sub Center",
+      "pin_code": 794006,
+      "tag_name": "L18",
+      "__v": 0
+    },
+    {
+      "maxFlightTime": 60,
+      "aerialDistance": null,
+      "aerialTime": 60,
+      "_id": "6791e05ec375be45b3e401d7",
+      "latitude": 25.790083,
+      "longitude": 90.335008,
+      "location_name": "Mangakgre Sub Centre",
+      "country_id": "639c35f98fa712051b926a36",
+      "zone_id": "639c5fe56c0ca3060e173c0c",
+      "state_id": "639c60e36c0ca3060e173c24",
+      "state": "Meghalaya",
+      "relatedHubs": "63932c7ab1cab628335ae969",
+      "roadDistance": "27Km",
+      "roadTime": null,
+      "district": "North Garo Hills",
+      "address": "Mangakgre Sub Centre",
+      "pin_code": 7941091,
+      "tag_name": "L19",
+      "__v": 0
+    },
+    {
+      "_id": "67974547035ca46302637a97",
+      "latitude": 25.5584479,
+      "longitude": 90.3575036,
+      "location_name": "Rombagre Sub-Center",
+      "country_id": "639c35f98fa712051b926a36",
+      "zone_id": "639c5fe56c0ca3060e173c0c",
+      "state_id": "639c60e36c0ca3060e173c24",
+      "state": "Meghalaya",
+      "relatedHubs": "63932c7ab1cab628335ae969",
+      "roadDistance": "27Km",
+      "roadTime": "01:40",
+      "district": "West Garo Hills",
+      "address": "West Garo Hills",
+      "pin_code": 725142,
+      "tag_name": "L20",
+      "maxFlightTime": 60,
+      "aerialDistance": null,
+      "aerialTime": 60,
+      "createdAt": "2025-01-27T08:35:19.926Z",
+      "updatedAt": "2025-01-27T08:35:19.926Z",
+      "__v": 0
+    },
+    {
+      "_id": "680b6c2e318f7dddc2f002b7",
+      "latitude": 25.538339,
+      "longitude": 90.288734,
+      "location_name": "Tosekgre SC",
+      "country_id": "639c35f98fa712051b926a36",
+      "zone_id": "639c5fe56c0ca3060e173c0c",
+      "state_id": "639c60e36c0ca3060e173c24",
+      "state": "Meghalaya",
+      "relatedHubs": "63932c7ab1cab628335ae969",
+      "roadDistance": "19Km",
+      "roadTime": "1",
+      "district": "Tura",
+      "address": "Tura, Meghalaya 000000",
+      "pin_code": 0,
+      "tag_name": "L21",
+      "maxFlightTime": 60,
+      "aerialDistance": null,
+      "aerialTime": 60,
+      "createdAt": "2025-04-25T11:04:14.835Z",
+      "updatedAt": "2025-04-25T11:04:14.835Z",
+      "__v": 0
+    },
+    {
+      "_id": "683ea92016be9468a57d23da",
+      "latitude": 28.393818140929255,
+      "longitude": 76.96296370286568,
+      "location_name": "Mapsko Casa Bella",
+      "country_id": "639c35f98fa712051b926a36",
+      "zone_id": "639c5f226c0ca3060e173bee",
+      "state_id": "639c6e92e364f00cff864987",
+      "state": "Haryana",
+      "relatedHubs": "683ea85716be9468a57d2375",
+      "roadDistance": "30Km",
+      "roadTime": "40min",
+      "district": "Gurugram",
+      "address": "Mapsko Casa Bella, Sector 82, Gurugram, Haryana 122004",
+      "pin_code": 122004,
+      "tag_name": "L1",
+      "maxFlightTime": 60,
+      "aerialDistance": null,
+      "aerialTime": 60,
+      "createdAt": "2025-06-03T07:49:52.360Z",
+      "updatedAt": "2025-06-03T07:49:52.360Z",
+      "__v": 0
+    }
+  ]
+}
