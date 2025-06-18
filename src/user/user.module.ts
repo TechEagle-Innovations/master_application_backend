@@ -8,6 +8,7 @@ import { AuthService } from './auth.service';
 import { UserInfo, UserInfoSchema } from '../schema/user/userInfo.schema';
 import jwtConfig from '../config/jwt.config';
 import { RolesGuard } from './guards/roles.guard';
+import { EmailTemplate } from 'src/emailService/emailTemplate';
 
 @Module({
   imports: [
@@ -27,7 +28,7 @@ import { RolesGuard } from './guards/roles.guard';
     }),
   ],
   controllers: [UserController],
-  providers: [UserService, AuthService, RolesGuard],
+  providers: [UserService, AuthService, RolesGuard, EmailTemplate],
   exports: [UserService, AuthService, JwtModule],
 })
 export class UserModule {}

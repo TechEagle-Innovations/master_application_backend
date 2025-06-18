@@ -55,11 +55,11 @@ export class UserInfo {
   @Prop()
   refreshToken?: string;
 
-  @Prop({ default: undefined })
-  resetPasswordOtp?: string;
+  // @Prop({ default: undefined })
+  // resetPasswordOtp?: string;
 
-  @Prop({ default: undefined })
-  resetPasswordOtpExpires?: Date;
+  // @Prop({ default: undefined })
+  // resetPasswordOtpExpires?: Date;
 
   @Prop({ default: false })
   resetPasswordOtpVerified?: boolean;
