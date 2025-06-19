@@ -49,7 +49,7 @@ export class DroneService {
         );
       }
       const response = await data.json();
-      // console.log('Drone data:', response);
+       console.log('Drone data:', response);
       return response.data;
     } catch (error) {
       console.error('Error fetching drones:', error);

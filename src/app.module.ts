@@ -7,6 +7,7 @@ import { UserModule } from './user/user.module';
 import { BatteryModule } from './battery/battery.module';
 import { NodeModule } from './node/node.module';
 import { DroneModule } from './drone/drone.module';
+import { FleetModule } from './fleet/fleet.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { DroneModule } from './drone/drone.module';
     BatteryModule,
     NodeModule,
     DroneModule,
+    FleetModule,
   ],
   controllers: [AppController],
   providers: [AppService],
