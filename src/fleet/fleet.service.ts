@@ -1,6 +1,8 @@
 import { BadGatewayException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { Request } from 'express';
 import * as dayjs from 'dayjs';
+import { throwException } from 'src/utility/throwError';
+
 
 @Injectable()
 export class FleetService {
@@ -103,7 +105,7 @@ export class FleetService {
       const errMsg =
         error.response?.message || error.message || 'Unknown error';
       const code = error.status || 500;
-      throw new InternalServerErrorException(errMsg, code);
+      throwException(errMsg, code);
       
     }
   }
