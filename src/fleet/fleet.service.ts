@@ -1,11 +1,25 @@
-import { BadGatewayException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import {
+  BadGatewayException,
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+  UnauthorizedException,
+  RequestTimeoutException,
+} from '@nestjs/common';
 import { Request } from 'express';
 import * as dayjs from 'dayjs';
 import { throwException } from 'src/utility/throwError';
-
+import { ConfigService } from '@nestjs/config';
+import { io, Socket } from 'socket.io-client';
+import * as jwt from 'jsonwebtoken';
+import { once } from 'src/utility/socket-helpers';
 
 @Injectable()
 export class FleetService {
+  private droneSocket: Socket | null = null;
+
+  constructor(private readonly config: ConfigService) {}
   // This method fetches all flights from the Clear Sky API
   async fetchAllFlight() {
     try {
@@ -61,52 +75,242 @@ export class FleetService {
     }
   }
 
-    // This method filters flights based on the provided query parameters.
+  // This method filters flights based on the provided query parameters.
   findMatchingDrones(query, droneArray) {
     return droneArray.filter((droneArray) =>
       Object.entries(query).every(([key, value]) => droneArray[key] === value),
     );
   }
-
+  // This method fetches flight history for a specific drone ID.
   async flightHistoryOfDrone(req: Request, id: string) {
     try {
-            if (!id) {
-              throw new NotFoundException('Drone ID is not provided in the request.');
-            }
-                  const flightData = await this.fetchAllFlight();
-                  if (!flightData || !Array.isArray(flightData)) {
-                    throw new InternalServerErrorException(
-                      'Failed to fetch flight data from Clear Sky.',
-                    );
-                  }
-            
-                  const query = {
-                    // This query filters flight based on the provided parameters.
-                    //hub_id: location,
-                    drone_id: id,
-                  };
-            
-                  const flight = this.findMatchingDrones(query, flightData); // Filter flight based on the query
-            
-                  if (!flight || flight.length === 0) {
-                    throw new BadGatewayException(
-                      `No Flight history found for drone ID ${id}.`,
-                    );
-                  }
+      if (!id) {
+        throw new NotFoundException('Drone ID is not provided in the request.');
+      }
+      const flightData = await this.fetchAllFlight();
+      if (!flightData || !Array.isArray(flightData)) {
+        throw new InternalServerErrorException(
+          'Failed to fetch flight data from Clear Sky.',
+        );
+      }
 
-                  return {
-                    status: 'success',
-                    message: `Flight history for drone ID ${id} fetched successfully`,
-                    data: flight,
-                  };
+      const query = {
+        // This query filters flight based on the provided parameters.
+        //hub_id: location,
+        drone_id: id,
+      };
 
+      const flight = this.findMatchingDrones(query, flightData); // Filter flight based on the query
+
+      if (!flight || flight.length === 0) {
+        throw new BadGatewayException(
+          `No Flight history found for drone ID ${id}.`,
+        );
+      }
+
+      return {
+        status: 'success',
+        message: `Flight history for drone ID ${id} fetched successfully`,
+        data: flight,
+      };
     } catch (error) {
       console.error('Error fetching flight history:', error);
       const errMsg =
         error.response?.message || error.message || 'Unknown error';
       const code = error.status || 500;
-      throwException(errMsg, code);
-      
+      throwException(code, errMsg);
+    }
+  }
+
+  // this method fetch the pre flight checklist from the socket io of the clearsky
+  async getPreflightChecklist(userJwt: string): Promise<{
+    status: string;
+    message: string;
+    data: any[];
+  }> {
+    const url = this.config.get<string>('CLEARSKY_CLIENT_SOCKET_URL');
+    let socket: Socket;
+
+    try {
+      socket = io(url, {
+        auth: { token: userJwt, page: 'monitor-all-drones' },
+        transports: ['websocket'],
+        timeout: 5000,
+        reconnectionAttempts: 1,
+      });
+
+      // 1. Wait for connection or error
+      try {
+        await once<void>(socket, 'connect');
+      } catch (err: any) {
+        if (err.message.includes('Unauthorized')) {
+          throw new UnauthorizedException('Invalid or expired token');
+        }
+        throw new InternalServerErrorException(
+          `Socket connect failed: ${err.message}`,
+        );
+      }
+
+      // 2. Ask for the checklist
+      socket.emit('client:getPreFlightChecklistItems', {});
+
+      // 3. Wait for the checklist or timeout
+      let items: any;
+      try {
+        items = await once<any>(socket, 'server:setPreFlightChecklistItems');
+      } catch {
+        throw new RequestTimeoutException('Checklist response timed out');
+      }
+
+      console.log('Received checklist items:', items);
+
+      //const list = Array.isArray(items) ? items : [items];
+
+      // 5. Validate
+      // if (list.length === 0) {
+      //   throw new NotFoundException('No pre-flight checklist items found');
+      // }
+
+      return {
+        status: 'success',
+        message: 'Pre-flight checklist fetched successfully',
+        data: items,
+      };
+    } finally {
+      // 6. Always clean up
+      if (socket && socket.connected) {
+        socket.disconnect();
+      }
+    }
+  }
+
+  // This method is to connect to te drone socket
+  async connectDrone(
+    droneId: string,
+  ): Promise<{ status: string; message: string }> {
+    if (this.droneSocket?.connected) {
+      return {
+        status: 'success',
+        message: 'Drone already connected',
+      };
+    }
+
+    const secret = this.config.get<string>('CLEARSKY_SECRET_KEY');
+    if (!secret) {
+      throw new InternalServerErrorException(
+        'CLEARSKY_SECRET_KEY is not set in .env',
+      );
+    }
+    let token: string;
+
+    try {
+      token = jwt.sign({ droneId }, secret);
+    } catch (err) {
+      throw new UnauthorizedException('Failed to generate drone token');
+    }
+
+    const url = this.config.get<string>('CLEARSKY_DRONE_SOCKET_URL');
+    this.droneSocket = io(url, {
+      auth: { token },
+      transports: ['websocket'],
+      timeout: 5000,
+      reconnectionAttempts: 1,
+    });
+
+    try {
+      await Promise.race([
+        once<void>(this.droneSocket, 'connect'),
+        once(this.droneSocket, 'connect_error').then(([err]) => {
+          if (err.message?.toLowerCase().includes('unauthorized')) {
+            throw new UnauthorizedException('Unauthorized drone connection');
+          }
+          throw new InternalServerErrorException(
+            `Socket connection error: ${err.message}`,
+          );
+        }),
+        new Promise((_, reject) =>
+          setTimeout(
+            () =>
+              reject(
+                new RequestTimeoutException(
+                  'Drone socket connection timed out',
+                ),
+              ),
+            6000,
+          ),
+        ),
+      ]);
+
+      // Emit ping to initialize monitor
+      this.droneSocket.emit('drone:monitor_data', { ping: true });
+      await new Promise((resolve) => setTimeout(resolve, 200));
+
+      return {
+        status: 'success',
+        message: 'Drone connected and ping sent successfully',
+      };
+    } catch (error) {
+      console.error('Error connecting to drone socket:', error);
+      const errMsg =
+        error.response?.message || error.message || 'Unknown error';
+      const code = error.status || 500;
+      throwException(code, errMsg);
+    }
+  }
+
+  //This method is to mark the pre flight checklist as done.
+  async completeChecklist(token: string, updates: Record<number, any>) {
+    const url = this.config.get<string>('CLEARSKY_CLIENT_SOCKET_URL');
+    let socket: Socket;
+
+    try {
+      // 1. Check if all items are confirmed
+      const allConfirmed = Object.values(updates).every(
+        (item: any) => item.confirm === true,
+      );
+      if (!allConfirmed) {
+        throw new BadRequestException(
+          'Pre-flight checklist is incomplete. All items must be confirmed.',
+        );
+      }
+
+      // 2. Connect socket
+      socket = io(url, {
+        auth: { token, page: 'monitor' },
+        transports: ['websocket'],
+        timeout: 5000,
+        reconnectionAttempts: 1,
+      });
+
+      await once(socket, 'connect');
+
+      // 3. Emit checklist updates
+      await new Promise<void>((resolve, reject) => {
+        socket.emit('client:updatePreFlightChecklistItems', updates, () => {
+          socket.emit('client:updatePreFlightChecklistDone', {}, () => {
+            resolve();
+          });
+        });
+
+        setTimeout(
+          () =>
+            reject(new RequestTimeoutException('Checklist marking timed out')),
+          5000,
+        );
+      });
+
+      return {
+        status: 'success',
+        message: 'Pre-flight checklist marked complete.',
+      };
+    } catch (error) {
+      console.error('Checklist completion error:', error);
+      const errMsg =
+        error.response?.message || error.message || 'Unknown error';
+      const code = error.status || 500;
+      throwException(code, errMsg);
+    } finally {
+      if (socket?.connected) socket.disconnect();
     }
   }
 }

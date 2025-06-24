@@ -4,9 +4,10 @@ import { FleetController } from './fleet.controller';
 import { use } from 'passport';
 import { UserModule } from 'src/user/user.module';
 import { JwtAuthGuard } from 'src/user/guards/jwt-auth.guard';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
-  imports: [UserModule],
+  imports: [UserModule, ConfigModule],
   controllers: [FleetController],
   providers: [FleetService, JwtAuthGuard],
 })
