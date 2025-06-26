@@ -5,7 +5,7 @@ import * as jwt from 'jsonwebtoken';
 ////////////////////////////////////////////////////////////////////////////////
 // CONFIG
 ////////////////////////////////////////////////////////////////////////////////
-const USER_JWT = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFua2l0Lm1pc2hyYUB0ZWNoZWFnbGUuaW4iLCJpYXQiOjE3NTA5MTgwOTEsImV4cCI6MTc1MDkyODg5MX0.StWznAgtaonhlB1Vj0d4nu8YDyXBNHtxKe1sT31pp6k';
+const USER_JWT = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFua2l0Lm1pc2hyYUB0ZWNoZWFnbGUuaW4iLCJpYXQiOjE3NTA4NzEyNDQsImV4cCI6MTc1MDg4MjA0NH0.mXqQrDFQCvztP21oUyQOs_ko-2qjfxbuuyd_gNrvzAM';
 const CLIENT_URL = 'https://training.ws5002.techeagle.org';
 ////////////////////////////////////////////////////////////////////////////////
 

@@ -31,9 +31,9 @@ export class FleetController {
 
   // This endpoint fetches pre-flight checklist.
   @UseGuards(JwtAuthGuard)
-  @Get('preflight-checklist')
-  async fetch() {
-    const token = process.env.CLEAR_SKY_API_KEY;
+  @Get('preflight')
+  async fetch(@Req() req: Request) {
+    const token = req.headers['x-auth-clearsky'] as string;
     if (!token) throw new UnauthorizedException('Missing Authorization header');
     const response = await this.fleetService.getPreflightChecklist(token);
     return response;
@@ -50,11 +50,12 @@ export class FleetController {
 
   // This endpoint mark the pre flight checklist done as per the updates(pre flight checklist with all value marked as true) provided in body.
   @UseGuards(JwtAuthGuard)
-  @Post('preflight-checklist-complete')
+  @Post('preflight')
   async complete(
+    @Req() req: Request,
     @Body('updates') updates: Record<number, any>,
   ) {
-    const token = process.env.CLEAR_SKY_API_KEY;
+    const token = req.headers['x-auth-clearsky'] as string;
     if (!token) {
       throw new UnauthorizedException('API key for Clear Sky is not set');
     }
@@ -62,6 +63,25 @@ export class FleetController {
       throw new BadRequestException('Invalid or missing updates');
     }
     const response = await this.fleetService.completeChecklist(token, updates);
-    return  response ;
+    return response;
+  }
+
+  // This endpoint fetches the post-flight checklist.
+  @UseGuards(JwtAuthGuard)
+  @Get('postflight')
+  async fetchPostflightChecklist(@Req() req: Request): Promise<any> {
+    const token = req.headers['x-auth-clearsky'] as string;
+    return await this.fleetService.getPostflightChecklist(token);
+  }
+
+  // This endpoint marks the post-flight checklist as done with the updates provided in body.
+  @UseGuards(JwtAuthGuard)
+  @Post('postflight')
+  async completePostflightChecklist(
+    @Req() req: Request,
+    @Body() updates: Record<number, any>,
+  ): Promise<any> {
+    const token = req.headers['x-auth-clearsky'] as string;
+    return await this.fleetService.completePostflightChecklist(token, updates);
   }
 }

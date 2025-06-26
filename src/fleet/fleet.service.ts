@@ -18,6 +18,7 @@ import { once } from 'src/utility/socket-helpers';
 @Injectable()
 export class FleetService {
   private droneSocket: Socket | null = null;
+  private readonly CLEARSKY_BASE_URL = process.env.CLEAR_SKY_BACKEND_URL;
 
   constructor(private readonly config: ConfigService) {}
   // This method fetches all flights from the Clear Sky API
@@ -45,7 +46,7 @@ export class FleetService {
       };
 
       const response = await fetch(
-        'https://test.clearsky.techeagle.org/flight/get_all_flights',
+        `${this.CLEARSKY_BASE_URL}/flight/get_all_flights`,
         {
           method: 'POST',
           headers: {
@@ -178,7 +179,7 @@ export class FleetService {
       };
     } finally {
       // 6. Always clean up
-      if (socket && socket.connected) {
+      if (socket) {
         socket.disconnect();
       }
     }
@@ -188,7 +189,7 @@ export class FleetService {
   async connectDrone(
     droneId: string,
   ): Promise<{ status: string; message: string }> {
-    if (this.droneSocket?.connected) {
+    if (this.droneSocket) {
       return {
         status: 'success',
         message: 'Drone already connected',
@@ -205,6 +206,7 @@ export class FleetService {
 
     try {
       token = jwt.sign({ droneId }, secret);
+      //console.log('Generated drone token:', token);
     } catch (err) {
       throw new UnauthorizedException('Failed to generate drone token');
     }
@@ -294,7 +296,11 @@ export class FleetService {
 
         setTimeout(
           () =>
-            reject(new RequestTimeoutException('Checklist marking timed out')),
+            reject(
+              new RequestTimeoutException(
+                'Timeout. Please verify your clearsky token.',
+              ),
+            ),
           5000,
         );
       });
@@ -311,6 +317,124 @@ export class FleetService {
       throwException(code, errMsg);
     } finally {
       if (socket?.connected) socket.disconnect();
+    }
+  }
+
+  // This method fetches the post-flight checklist from the socket io of the clearsky
+  async getPostflightChecklist(userJwt: string): Promise<{
+    status: string;
+    message: string;
+    data: any[];
+  }> {
+    const url = this.config.get<string>('CLEARSKY_CLIENT_SOCKET_URL');
+    let socket: Socket;
+
+    try {
+      socket = io(url, {
+        auth: { token: userJwt, page: 'monitor-all-drones' },
+        transports: ['websocket'],
+        timeout: 5000,
+        reconnectionAttempts: 1,
+      });
+
+      // 1. Wait for connection or error
+      try {
+        await once<void>(socket, 'connect');
+      } catch (err: any) {
+        if (err.message.includes('Unauthorized')) {
+          throw new UnauthorizedException('Invalid or expired token');
+        }
+        throw new InternalServerErrorException(
+          `Socket connect failed: ${err.message}`,
+        );
+      }
+
+      // 2. Ask for the checklist
+      socket.emit('client:getPostFlightChecklistItems', {});
+
+      // 3. Wait for the checklist or timeout
+      let items: any;
+      try {
+        items = await once<any>(socket, 'server:setPostFlightChecklistItems');
+      } catch {
+        throw new RequestTimeoutException('Checklist response timed out');
+      }
+
+      console.log('Received checklist items:', items);
+
+      //const list = Array.isArray(items) ? items : [items];
+
+      // 5. Validate
+      // if (list.length === 0) {
+      //   throw new NotFoundException('No pre-flight checklist items found');
+      // }
+
+      return {
+        status: 'success',
+        message: 'Post-flight checklist fetched successfully',
+        data: items,
+      };
+    } finally {
+      // 6. Always clean up
+      if (socket) {
+        socket.disconnect();
+      }
+    }
+  }
+
+  // This method marks the post-flight checklist as done with the updates provided in body.
+  async completePostflightChecklist(
+    userJwt: string,
+    updates: Record<number, any>,
+  ): Promise<{ status: string; message: string }> {
+    const url = this.config.get<string>('CLEARSKY_CLIENT_SOCKET_URL');
+    const socket = io(url, {
+      auth: { token: userJwt, page: 'monitor-all-drones' },
+      transports: ['websocket'],
+      timeout: 5000,
+      reconnectionAttempts: 1,
+    });
+
+    try {
+      await Promise.race([
+        once<void>(socket, 'connect'),
+        once(socket, 'connect_error').then(([err]) => {
+          if (err.message.includes('Unauthorized'))
+            throw new UnauthorizedException('Invalid token');
+          throw new InternalServerErrorException(
+            `Connection error: ${err.message}`,
+          );
+        }),
+        new Promise((_, reject) =>
+          setTimeout(
+            () =>
+              reject(
+                new RequestTimeoutException(
+                  'Timeout. Please verify your clearsky token.',
+                ),
+              ),
+            6000,
+          ),
+        ),
+      ]);
+
+      // Emit updates
+      socket.emit('client:updatePostFlightChecklistItems', updates);
+
+      // Mark checklist as done
+      socket.emit('client:updatePostFlightChecklistDone', {});
+
+      return {
+        status: 'success',
+        message: 'Post-flight checklist completed successfully',
+      };
+    } catch (err) {
+      console.error('Error completing post-flight checklist:', err);
+      const errMsg = err.response?.message || err.message || 'Unknown error';
+      const code = err.status || 500;
+      throwException(code, errMsg);
+    } finally {
+      socket.disconnect();
     }
   }
 }

@@ -16,6 +16,7 @@ export class DroneService {
     cachedAt: 0,
   };
   private readonly TTL = 48 * 60 * 60 * 1000; // 48 hours in milliseconds for caching
+  private readonly CLEARSKY_BASE_URL = process.env.CLEAR_SKY_BACKEND_URL;
 
   // This method filters drones based on the provided query parameters.
   findMatchingDrones(query, droneArray) {
@@ -33,8 +34,9 @@ export class DroneService {
           'API key for Clear Sky is not set in environment variables.',
         );
       }
+      console.log("URL", this.CLEARSKY_BASE_URL);
       const data = await fetch(
-        'https://test.clearsky.techeagle.org/drone/get_all_drones',
+        `${this.CLEARSKY_BASE_URL}/drone/get_all_drones`,
         {
           method: 'GET',
           headers: {
