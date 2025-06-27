@@ -5,9 +5,15 @@ import { use } from 'passport';
 import { UserModule } from 'src/user/user.module';
 import { JwtAuthGuard } from 'src/user/guards/jwt-auth.guard';
 import { ConfigModule } from '@nestjs/config';
+import { MongooseModule } from '@nestjs/mongoose';
+import { FlightRecord, FlightRecordSchema } from '../schema/flight-record.schema';
 
 @Module({
-  imports: [UserModule, ConfigModule],
+  imports: [
+    UserModule,
+    ConfigModule,
+    MongooseModule.forFeature([{ name: FlightRecord.name, schema: FlightRecordSchema }]),
+  ],
   controllers: [FleetController],
   providers: [FleetService, JwtAuthGuard],
 })

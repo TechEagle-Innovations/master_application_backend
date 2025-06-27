@@ -14,13 +14,24 @@ import { ConfigService } from '@nestjs/config';
 import { io, Socket } from 'socket.io-client';
 import * as jwt from 'jsonwebtoken';
 import { once } from 'src/utility/socket-helpers';
+import { Model } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
+import {
+  FlightRecord,
+  FlightRecordDocument,
+} from '../schema/flight-record.schema';
 
 @Injectable()
 export class FleetService {
   private droneSocket: Socket | null = null;
   private readonly CLEARSKY_BASE_URL = process.env.CLEAR_SKY_BACKEND_URL;
 
-  constructor(private readonly config: ConfigService) {}
+  constructor(
+    @InjectModel(FlightRecord.name)
+    private readonly flightModel: Model<FlightRecordDocument>,
+    private readonly config: ConfigService,
+  ) {}
+
   // This method fetches all flights from the Clear Sky API
   async fetchAllFlight() {
     try {
@@ -74,6 +85,20 @@ export class FleetService {
         err.message || 'Unexpected error occurred while fetching drones.',
       );
     }
+  }
+  // This method extracts image URLs from the checklist items.
+  getImgArray(checklist: {}): string[] {
+    // This method extracts image URLs from the checklist items.
+    if (!checklist || typeof checklist !== 'object') {
+      throw new BadRequestException('Invalid checklist data provided.');
+    }
+    const imgArray: string[] = [];
+    Object.values(checklist).forEach((item: any) => {
+      if (item && item.image) {
+        imgArray.push(item.image);
+      }
+    });
+    return imgArray;
   }
 
   // This method filters flights based on the provided query parameters.
@@ -260,65 +285,253 @@ export class FleetService {
     }
   }
 
-  //This method is to mark the pre flight checklist as done.
-  async completeChecklist(token: string, updates: Record<number, any>) {
-    const url = this.config.get<string>('CLEARSKY_CLIENT_SOCKET_URL');
-    let socket: Socket;
+  // //This method is to mark the pre flight checklist as done.
+  // async completeChecklist(req: Request,token: string, updates: Record<number, any>) {
+  //   const url = this.config.get<string>('CLEARSKY_CLIENT_SOCKET_URL');
+  //   let socket: Socket;
 
-    try {
-      // 1. Check if all items are confirmed
-      const allConfirmed = Object.values(updates).every(
-        (item: any) => item.confirm === true,
+  //   try {
+  //     // 1. Check if all items are confirmed
+  //     const allConfirmed = Object.values(updates).every(
+  //       (item: any) => item.confirm === true,
+  //     );
+  //     if (!allConfirmed) {
+  //       throw new BadRequestException(
+  //         'Pre-flight checklist is incomplete. All items must be confirmed.',
+  //       );
+  //     }
+
+  //     // 2. Connect socket
+  //     socket = io(url, {
+  //       auth: { token, page: 'monitor' },
+  //       transports: ['websocket'],
+  //       timeout: 5000,
+  //       reconnectionAttempts: 1,
+  //     });
+
+  //     await once(socket, 'connect');
+
+  //     let flightData: any;
+  //     // socket.on('server:setFlightData', (payload) => {
+  //     //   const flight = payload && payload.flight ? payload.flight : payload;
+  //     //   console.log('Flight info:', flight);
+  //     //   flightData = flight;
+  //     // });
+
+  //     // //console.log('FLIGHT DATA 1', flightData);
+
+  //     // if (!flightData) {
+  //     //   // 2. Ask for the flight data
+  //     //   socket.emit('client:getFlightData', null, (ack) => {
+  //     //     console.log('server acknowledged', ack);
+          
+  //     //   });
+        
+  //     //   try {
+  //     //     await once(socket, 'server:setFlightData');
+  //     //   } catch (err) {
+  //     //     console.error('Error waiting for flight data:', err);
+  //     //     throw new InternalServerErrorException(
+  //     //       'Failed to receive flight data from Clear Sky',
+  //     //     );
+  //     //   }
+  //     // }
+  //     //console.log('FLIGHT DATA 2', flightData)
+
+  //     console.log('Flight ID:', flightData._id);
+  //     if(flightData.isPreFlightChecklistCompleted){
+  //       throw new BadRequestException(
+  //         'Pre-flight checklist is already completed for this flight.',
+  //       )
+  //     }
+  //     if (flightData.isCompleted){
+  //       throw new BadRequestException(
+  //         'This flight is already completed. You cannot mark the pre-flight checklist as done.',
+  //       );
+  //     }
+
+  //     // 3. Emit checklist updates
+  //     await new Promise<void>((resolve, reject) => {
+  //       socket.emit('client:updatePreFlightChecklistItems', updates, () => {
+  //         socket.emit('client:updatePreFlightChecklistDone', {}, () => {
+  //           resolve();
+  //         });
+  //       });
+
+  //       setTimeout(
+  //         () =>
+  //           reject(
+  //             new RequestTimeoutException(
+  //               'Timeout. Please verify your clearsky token.',
+  //             ),
+  //           ),
+  //         5000,
+  //       );
+  //     });
+  //     const preFlightImages = this.getImgArray(updates);
+  //     console.log('USER', req.user);
+  //     console.log('Drone ID', flightData?.drone_id);
+  //     // 4. Save flight record
+  //     if (flightData) {
+  //       const flightRecord = new this.flightModel({
+  //         droneId: flightData.drone_id,
+  //         clearskyId: flightData._id,
+  //         pilotEmail: flightData.pilot_id1,
+  //         preFlightAppUserId: req.user['email'],
+  //         preFlightChecklist: updates,
+  //         preFlightImages,
+  //         flightData: flightData,
+  //         createdAt: new Date(),
+  //       });
+  //       await flightRecord.save();
+  //       console.log('Flight record saved successfully:', flightRecord);
+  //     } else {
+  //       throw new InternalServerErrorException(
+  //         'Flight data not received after checklist completion',
+  //       );
+  //     } 
+
+  //     return {
+  //       status: 'success',
+  //       message: 'Pre-flight checklist marked complete.',
+  //     };
+  //   } catch (error) {
+  //     console.error('Checklist completion error:', error);
+  //     const errMsg =
+  //       error.response?.message || error.message || 'Unknown error';
+  //     const code = error.status || 500;
+  //     throwException(code, errMsg);
+  //   } finally {
+  //     if (socket?.connected) socket.disconnect();
+  //   }
+  // }
+
+  // This method is to mark the pre-flight checklist as done.
+async completeChecklist(req: Request, token: string, updates: Record<number, any>) {
+  const url = this.config.get<string>('CLEARSKY_CLIENT_SOCKET_URL');
+  let socket: Socket;
+
+  try {
+  
+    const allConfirmed = Object.values(updates).every(
+      (item: any) => item.confirm === true,
+    );
+    if (!allConfirmed) {
+      throw new BadRequestException(
+        'Pre-flight checklist is incomplete. All items must be confirmed.',
       );
-      if (!allConfirmed) {
-        throw new BadRequestException(
-          'Pre-flight checklist is incomplete. All items must be confirmed.',
-        );
-      }
+    }
 
-      // 2. Connect socket
-      socket = io(url, {
-        auth: { token, page: 'monitor' },
-        transports: ['websocket'],
-        timeout: 5000,
-        reconnectionAttempts: 1,
-      });
+  
+    socket = io(url, {
+      auth: { token, page: 'monitor' },
+      transports: ['websocket'],
+      timeout: 5000,
+      reconnectionAttempts: 1,
+    });
+    await once(socket, 'connect');
 
-      await once(socket, 'connect');
 
-      // 3. Emit checklist updates
-      await new Promise<void>((resolve, reject) => {
-        socket.emit('client:updatePreFlightChecklistItems', updates, () => {
-          socket.emit('client:updatePreFlightChecklistDone', {}, () => {
-            resolve();
-          });
+    const flightData: any = await new Promise<any>((resolve, reject) => {
+ 
+      const onPush = (payload: any) => {
+        socket.off('server:setFlightData', onPush);
+        resolve(payload?.flight ?? payload);
+      };
+      socket.on('server:setFlightData', onPush);
+
+   
+      socket
+        .timeout(5000)
+        .emit('client:getFlightData', null, (err: any, ack: any) => {
+          if (err) return; // continue waiting for the push
+          socket.off('server:setFlightData', onPush);
+          resolve(ack?.flight ?? ack);
         });
 
-        setTimeout(
-          () =>
-            reject(
-              new RequestTimeoutException(
-                'Timeout. Please verify your clearsky token.',
-              ),
+      setTimeout(
+        () => {
+          socket.off('server:setFlightData', onPush);
+          reject(
+            new InternalServerErrorException(
+              'Failed to receive flight data from Clear Sky',
             ),
-          5000,
-        );
+          );
+        },
+        5000,
+      );
+    });
+    
+
+    console.log('Flight ID:', flightData._id);
+    if (flightData.isPreFlightChecklistCompleted) {
+      throw new BadRequestException(
+        'Pre-flight checklist is already completed for this flight.',
+      );
+    }
+    if (flightData.isCompleted) {
+      throw new BadRequestException(
+        'This flight is already completed. You cannot mark the pre-flight checklist as done.',
+      );
+    }
+
+  
+    await new Promise<void>((resolve, reject) => {
+      socket.emit('client:updatePreFlightChecklistItems', updates, () => {
+        socket.emit('client:updatePreFlightChecklistDone', {}, () => {
+          resolve();
+        });
       });
 
-      return {
-        status: 'success',
-        message: 'Pre-flight checklist marked complete.',
-      };
-    } catch (error) {
-      console.error('Checklist completion error:', error);
-      const errMsg =
-        error.response?.message || error.message || 'Unknown error';
-      const code = error.status || 500;
-      throwException(code, errMsg);
-    } finally {
-      if (socket?.connected) socket.disconnect();
+      setTimeout(
+        () =>
+          reject(
+            new RequestTimeoutException(
+              'Timeout. Please verify your clearsky token.',
+            ),
+          ),
+        5000,
+      );
+    });
+
+    const preFlightImages = this.getImgArray(updates);
+    console.log('USER', req.user);
+    console.log('Drone ID', flightData?.drone_id);
+
+
+    if (flightData) {
+      const flightRecord = new this.flightModel({
+        droneId: flightData.drone_id,
+        clearskyId: flightData._id,
+        pilotEmail: flightData.pilot_id1,
+        preFlightAppUserId: req.user['email'],
+        preFlightChecklist: updates,
+        preFlightImages,
+        flightData,
+        createdAt: new Date(),
+      });
+      await flightRecord.save();
+      console.log('Flight record saved successfully:', flightRecord);
+    } else {
+      throw new InternalServerErrorException(
+        'Flight data not received after checklist completion',
+      );
     }
+
+    return {
+      status: 'success',
+      message: 'Pre-flight checklist marked complete.',
+    };
+  } catch (error) {
+    console.error('Checklist completion error:', error);
+    const errMsg = error.response?.message || error.message || 'Unknown error';
+    const code = error.status || 500;
+    throwException(code, errMsg);
+  } finally {
+    if (socket?.connected) socket.disconnect();
   }
+}
+
 
   // This method fetches the post-flight checklist from the socket io of the clearsky
   async getPostflightChecklist(userJwt: string): Promise<{
@@ -382,59 +595,124 @@ export class FleetService {
     }
   }
 
-  // This method marks the post-flight checklist as done with the updates provided in body.
-  async completePostflightChecklist(
-    userJwt: string,
-    updates: Record<number, any>,
-  ): Promise<{ status: string; message: string }> {
-    const url = this.config.get<string>('CLEARSKY_CLIENT_SOCKET_URL');
-    const socket = io(url, {
-      auth: { token: userJwt, page: 'monitor-all-drones' },
-      transports: ['websocket'],
-      timeout: 5000,
-      reconnectionAttempts: 1,
-    });
 
-    try {
-      await Promise.race([
-        once<void>(socket, 'connect'),
-        once(socket, 'connect_error').then(([err]) => {
-          if (err.message.includes('Unauthorized'))
-            throw new UnauthorizedException('Invalid token');
-          throw new InternalServerErrorException(
-            `Connection error: ${err.message}`,
-          );
-        }),
-        new Promise((_, reject) =>
-          setTimeout(
-            () =>
-              reject(
-                new RequestTimeoutException(
-                  'Timeout. Please verify your clearsky token.',
-                ),
+ // This method marks the post-flight checklist as done with the updates provided in body.
+async completePostflightChecklist(
+  req: Request,
+  userJwt: string,
+  updates: Record<number, any>,
+): Promise<{ status: string; message: string }> {
+  const updObj = (updates as any).updates ?? updates;   
+
+  const url = this.config.get<string>('CLEARSKY_CLIENT_SOCKET_URL');
+  const socket = io(url, {
+    auth: { token: userJwt, page: 'monitor-all-drones' },
+    transports: ['websocket'],
+    timeout: 5000,
+    reconnectionAttempts: 1,
+  });
+
+  try {
+  
+    await Promise.race([
+      once<void>(socket, 'connect'),
+      once(socket, 'connect_error').then(([err]) => {
+        if (err.message.includes('Unauthorized'))
+          throw new UnauthorizedException('Invalid token');
+        throw new InternalServerErrorException(`Connection error: ${err.message}`);
+      }),
+      new Promise((_, reject) =>
+        setTimeout(
+          () =>
+            reject(
+              new RequestTimeoutException(
+                'Timeout. Please verify your clearsky token.',
               ),
-            6000,
-          ),
+            ),
+          6000,
         ),
-      ]);
+      ),
+    ]);
 
-      // Emit updates
-      socket.emit('client:updatePostFlightChecklistItems', updates);
-
-      // Mark checklist as done
-      socket.emit('client:updatePostFlightChecklistDone', {});
-
-      return {
-        status: 'success',
-        message: 'Post-flight checklist completed successfully',
+    const flightData: any = await new Promise<any>((resolve, reject) => {
+      const onPush = (payload: any) => {
+        socket.off('server:setFlightData', onPush);
+        resolve(payload?.flight ?? payload);
       };
-    } catch (err) {
-      console.error('Error completing post-flight checklist:', err);
-      const errMsg = err.response?.message || err.message || 'Unknown error';
-      const code = err.status || 500;
-      throwException(code, errMsg);
-    } finally {
-      socket.disconnect();
+      socket.on('server:setFlightData', onPush);
+
+      socket
+        .timeout(5000)
+        .emit('client:getFlightData', null, (err: any, ack: any) => {
+          if (err) return; // keep waiting for push
+          socket.off('server:setFlightData', onPush);
+          resolve(ack?.flight ?? ack);
+        });
+
+      setTimeout(
+        () => {
+          socket.off('server:setFlightData', onPush);
+          reject(
+            new InternalServerErrorException(
+              'Failed to receive flight data from Clear Sky',
+            ),
+          );
+        },
+        5000,
+      );
+    });
+    if (!flightData) {
+      throw new InternalServerErrorException(
+        'Flight data not received after checklist completion',
+      );
     }
+
+    console.log('FLIGHT ID', flightData._id);
+
+    if (flightData.isPostFlightChecklistCompleted) { 
+      throw new BadRequestException(
+        'Post-flight checklist is already completed for this flight.',
+      );
+    }
+    if (!flightData.isCompleted) {
+      throw new BadRequestException(
+        'This flight is not completed yet. You cannot mark the post-flight checklist as done.',
+      );
+    }
+
+      
+    socket.emit('client:updatePostFlightChecklistItems', updObj);
+    socket.emit('client:updatePostFlightChecklistDone', {});
+
+    
+    const postFlightImages = this.getImgArray(updObj);
+
+    const flightRecord = await this.flightModel.findOne({
+      clearskyId: flightData._id,
+    });
+    if (!flightRecord)
+      throw new NotFoundException(
+        `Flight record not found for clearskyId ${flightData._id}`,
+      );
+
+    flightRecord.postFlightChecklist = updObj;     
+    flightRecord.postFlightImages   = postFlightImages;
+    flightRecord.postFlightAppUserId = req.user['email'];
+    flightRecord.updatedAt = new Date();
+    await flightRecord.save();
+    console.log('Flight record updated successfully:', flightRecord);
+
+    return {
+      status: 'success',
+      message: 'Post-flight checklist completed successfully',
+    };
+  } catch (err) {
+    console.error('Error completing post-flight checklist:', err);
+    const errMsg = err.response?.message || err.message || 'Unknown error';
+    const code = err.status || 500;
+    throwException(code, errMsg);
+  } finally {
+    socket.disconnect();
   }
+}
 }

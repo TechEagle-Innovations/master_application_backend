@@ -62,7 +62,7 @@ export class FleetController {
     if (!updates || typeof updates !== 'object') {
       throw new BadRequestException('Invalid or missing updates');
     }
-    const response = await this.fleetService.completeChecklist(token, updates);
+    const response = await this.fleetService.completeChecklist(req,token, updates);
     return response;
   }
 
@@ -82,6 +82,6 @@ export class FleetController {
     @Body() updates: Record<number, any>,
   ): Promise<any> {
     const token = req.headers['x-auth-clearsky'] as string;
-    return await this.fleetService.completePostflightChecklist(token, updates);
+    return await this.fleetService.completePostflightChecklist(req, token, updates);
   }
 }
