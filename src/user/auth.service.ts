@@ -5,6 +5,11 @@ import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { UserInfo, UserInfoDocument } from '../schema/user/userInfo.schema';
 import { LogoutDto } from './dto/logout.dto';
+import axios from 'axios';
+import { Cron, CronExpression } from '@nestjs/schedule';
+
+// NOTE: Make sure to install @nestjs/schedule and add ScheduleModule.forRoot() to your AppModule imports for cron jobs to work.
+// import { ScheduleModule } from '@nestjs/schedule';
 
 @Injectable()
 export class AuthService {
@@ -34,8 +39,30 @@ export class AuthService {
     if (!user.active) {
       throw new UnauthorizedException('User account is inactive');
     }
-
+    // Call Clearsky login and extract token
+    const clearskyResponse = await this.loginClearskyUser(email, password);
+    const { token } = clearskyResponse || {};
+    if (!token) {
+      throw new UnauthorizedException('Clearsky login failed');
+    }
+    // Optionally, you can attach the token to the user object or return it as needed
+    user.clearskyToken = token;
+    await user.save();
     return user;
+  }
+
+  async loginClearskyUser(email: string, password: string) {
+    try {
+      const response = await axios(`${process.env.CLEARSKY_BACKEND_IP}/admin/login`, {
+        method: "POST",
+        data: { useremail: email, password }
+      });
+      console.log('Clearsky login response:', response.data);
+      return response.data;
+    } catch (error) {
+      console.log("ERROR IN CLEARSKY LOGIN", error?.response?.data || error.message || error);
+      return null;
+    }
   }
 
   async login(user: UserInfoDocument) {
@@ -200,5 +227,27 @@ export class AuthService {
     await user.save();
     console.log('User logged out', user);
     return { message: 'Successfully logged out' };
+  }
+
+  // Cron job to refresh Clearsky token every 2 hours and 30 minutes
+  @Cron('0 */150 * * * *') // Every 2 hours and 30 minutes
+  async refreshClearskyTokens() {
+    try {
+      const users = await this.userModel.find({ active: true}).exec();
+      for (const user of users) {
+        if (user.useremail && user.password) {
+          // Use the stored password (if available) or skip if not present
+          const clearskyResponse = await this.loginClearskyUser(user.useremail, user.password);
+          const { token } = clearskyResponse || {};
+          if (token) {
+            user.clearskyToken = token;
+            await user.save();
+          }
+        }
+      }
+      console.log('Clearsky tokens refreshed for all users');
+    } catch (error) {
+      console.error('Error refreshing Clearsky tokens:', error);
+    }
   }
 } 
