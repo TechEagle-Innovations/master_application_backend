@@ -43,13 +43,13 @@ export class UserInfo {
   @Prop({ default: false })
   active: boolean;
 
-  @Prop({ default: 'techeagle'})
+  @Prop({ default: 'techeagle' })
   clientId: string;
 
-  @Prop({default: undefined})
+  @Prop({ default: undefined })
   resetPasswordToken?: string;
 
-  @Prop({default: undefined})
+  @Prop({ default: undefined })
   resetPasswordExpires?: Date;
 
   @Prop()
@@ -64,10 +64,13 @@ export class UserInfo {
   @Prop({ default: false })
   resetPasswordOtpVerified?: boolean;
 
-  @Prop({ 
-    type: String, 
+  @Prop({ default: "" })
+  clearskyToken: string;
+
+  @Prop({
+    type: String,
     enum: UserDesignation,
-    default: UserDesignation.CLIENT_USER 
+    default: UserDesignation.CLIENT_USER
   })
   designation: UserDesignation;
 }

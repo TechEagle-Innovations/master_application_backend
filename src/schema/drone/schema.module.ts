@@ -5,6 +5,7 @@ import { Drone, DroneSchema } from './drone.schema';
 import { DroneModel, DroneModelSchema } from './droneModel.schema';
 import { DroneOrderSummary, DroneOrderSummarySchema } from './droneOrderSummary.schema';
 import { DroneTestingSummary, DroneTestingSummarySchema } from './droneTestingSummary.schema';
+import { DroneMaintenance, DroneMaintenanceSchema } from '../maintainance/droneMaintenance.schema';
 
 @Module({
     imports: [
@@ -17,6 +18,9 @@ import { DroneTestingSummary, DroneTestingSummarySchema } from './droneTestingSu
         ]),
         MongooseModule.forFeature([
             { name: DroneTestingSummary.name, schema: DroneTestingSummarySchema }
+        ]),
+        MongooseModule.forFeature([
+            { name: DroneMaintenance.name, schema: DroneMaintenanceSchema }
         ])
     ],
     exports: [
@@ -29,6 +33,9 @@ import { DroneTestingSummary, DroneTestingSummarySchema } from './droneTestingSu
         ]),
         MongooseModule.forFeature([
             { name: DroneTestingSummary.name, schema: DroneTestingSummarySchema }
+        ]),
+        MongooseModule.forFeature([
+            { name: DroneMaintenance.name, schema: DroneMaintenanceSchema }
         ])
     ],
 })

@@ -8,6 +8,7 @@ import { BatteryModule } from './battery/battery.module';
 import { NodeModule } from './node/node.module';
 import { DroneModule } from './drone/drone.module';
 import { FleetModule } from './fleet/fleet.module';
+import { MaintainanceModule } from './maintainance/maintainance.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { FleetModule } from './fleet/fleet.module';
     NodeModule,
     DroneModule,
     FleetModule,
+    MaintainanceModule,
   ],
   controllers: [AppController],
   providers: [AppService],
