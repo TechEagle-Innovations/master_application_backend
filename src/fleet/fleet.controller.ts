@@ -42,9 +42,9 @@ export class FleetController {
   // This endpoint connect to the drone using its ID.
   @UseGuards(JwtAuthGuard)
   @Post('connect-drone')
-  async connectDrone(@Query('droneId') droneId: string) {
-    if (!droneId) throw new BadRequestException('droneId query required');
-    const response = await this.fleetService.connectDrone(droneId);
+  async connectDrone(@Body() body: { droneId: string, password: string, email: string }) {
+    if (!body.droneId) throw new BadRequestException('droneId query required');
+    const response = await this.fleetService.connectDrone(body.droneId, body.password, body.email);
     return response;
   }
 
