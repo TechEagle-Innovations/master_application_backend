@@ -217,81 +217,31 @@ export class FleetService {
   // This method is to connect to te drone socket
   async connectDrone(
     droneId: string,
-    password: string,
-    email: string,
-  ): Promise<{ status: string; message: string; clearskyToken?: string }> {
-    try {
-
-       // 4. Authenticate with backend
-       const clearskyToken = await this.authenticateWithBackend(email, password); 
-       console.log('Clearsky token:', clearskyToken);
-
-      // 1. Input validation
-      this.validateInputs(droneId, password, email);
-
-      // 2. Check for existing connection
-      if (this.isDroneConnected()) {
-        this.logger.log(`Drone ${droneId} already connected`);
-        return { status: 'success', message: 'Drone already connected' };
-      }
-
-      // 3. Setup socket connection
-      const token = this.generateDroneToken(droneId);
-      await this.connectToDroneSocket(token);
-
-
+  ): Promise<{ status: string; message: string }> {
+    if (this.droneSocket) {
       return {
         status: 'success',
-        message: 'Drone connected and authenticated successfully',
-        clearskyToken,
+        message: 'Drone already connected',
       };
-    } catch (error) {
-      this.handleConnectionError(error);
-    }
-  }
-
-  private validateInputs(droneId: string, password: string, email: string): void {
-    if (!droneId || !password || !email) {
-      throw new BadRequestException('Missing required parameters');
     }
 
-    if (!this.isValidEmail(email)) {
-      throw new BadRequestException('Invalid email format');
-    }
-  }
-
-  private isValidEmail(email: string): boolean {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  }
-
-  private isDroneConnected(): boolean {
-    return !!this.droneSocket?.connected;
-  }
-
-  private generateDroneToken(droneId: string): string {
     const secret = this.config.get<string>('CLEARSKY_SECRET_KEY');
     if (!secret) {
-      throw new InternalServerErrorException('CLEARSKY_SECRET_KEY is not configured');
+      throw new InternalServerErrorException(
+        'CLEARSKY_SECRET_KEY is not set in .env',
+      );
     }
+    let token: string;
 
     try {
-      const token = jwt.sign({ droneId }, secret, { expiresIn: '1h' });
-      this.logger.debug(`Generated token for drone ${droneId}`);
-      return token;
-    } catch (error) {
-      this.logger.error('Failed to generate drone token', error.stack);
+      token = jwt.sign({ droneId }, secret);
+      //console.log('Generated drone token:', token);
+    } catch (err) {
       throw new UnauthorizedException('Failed to generate drone token');
     }
-  }
 
-  private async connectToDroneSocket(token: string): Promise<void> {
-    const socketUrl = this.config.get<string>('CLEARSKY_DRONE_SOCKET_URL');
-    if (!socketUrl) {
-      throw new InternalServerErrorException('CLEARSKY_DRONE_SOCKET_URL is not configured');
-    }
-
-    this.droneSocket = io(socketUrl, {
+    const url = this.config.get<string>('CLEARSKY_DRONE_SOCKET_URL');
+    this.droneSocket = io(url, {
       auth: { token },
       transports: ['websocket'],
       timeout: 5000,
@@ -299,85 +249,43 @@ export class FleetService {
     });
 
     try {
-      await this.establishSocketConnection();
-      await this.sendInitialPing();
+      await Promise.race([
+        once<void>(this.droneSocket, 'connect'),
+        once(this.droneSocket, 'connect_error').then(([err]) => {
+          if (err.message?.toLowerCase().includes('unauthorized')) {
+            throw new UnauthorizedException('Unauthorized drone connection');
+          }
+          throw new InternalServerErrorException(
+            `Socket connection error: ${err.message}`,
+          );
+        }),
+        new Promise((_, reject) =>
+          setTimeout(
+            () =>
+              reject(
+                new RequestTimeoutException(
+                  'Drone socket connection timed out',
+                ),
+              ),
+            6000,
+          ),
+        ),
+      ]);
+
+      // Emit ping to initialize monitor
+      this.droneSocket.emit('drone:monitor_data', { ping: true });
+      await new Promise((resolve) => setTimeout(resolve, 200));
+
+      return {
+        status: 'success',
+        message: 'Drone connected and ping sent successfully',
+      };
     } catch (error) {
-      this.cleanupSocket();
-      throw error;
-    }
-  }
-
-  private async establishSocketConnection(): Promise<void> {
-    return Promise.race([
-      once(this.droneSocket!, 'connect').then(() => {
-        this.logger.log('Socket connection established');
-      }),
-      once(this.droneSocket!, 'connect_error').then(([err]) => {
-        throw err.message?.toLowerCase().includes('unauthorized')
-          ? new UnauthorizedException('Unauthorized drone connection')
-          : new InternalServerErrorException(`Socket connection error: ${err.message}`);
-      }).then(() => { /* never resolves here, but for type */ }),
-      new Promise<void>((_, reject) =>
-        setTimeout(
-          () => reject(new RequestTimeoutException('Drone socket connection timed out')),
-          6000
-        )
-      ),
-    ]);
-  }
-
-  private async sendInitialPing(): Promise<void> {
-    this.droneSocket!.emit('drone:monitor_data', { ping: true });
-    await new Promise(resolve => setTimeout(resolve, 200));
-    this.logger.debug('Initial ping sent successfully');
-  }
-
-  private async authenticateWithBackend(email: string, password: string): Promise<string> {
-    const backendUrl = this.config.get<string>('CLEAR_SKY_BACKEND_URL');
-    if (!backendUrl) {
-      throw new InternalServerErrorException('CLEAR_SKY_BACKEND_URL is not configured');
-    }
-
-    try {
-      // console.log('Authenticating with backend...');
-      // console.log('Email:', email);
-      // console.log('Password:', password);
-      // console.log('Backend URL:', backendUrl);  
-      const response = await axios.post(`${backendUrl}/admin/login`, {
-        useremail: email,
-        password: password,
-      });
-      // console.log('Response:', response);
-
-      if (!response?.data?.token) {
-        throw new InternalServerErrorException('Invalid authentication response');
-      }
-
-      return response.data.token;
-    } catch (error) {
-      this.logger.error('Backend authentication failed', error.stack);
-      throw error instanceof UnauthorizedException
-        ? error
-        : new InternalServerErrorException('Authentication service unavailable');
-    }
-  }
-
-  private handleConnectionError(error: any): never {
-    this.logger.error('Drone connection failed', error.stack);
-    
-    if (error instanceof HttpException) {
-      throw error;
-    }
-
-    this.cleanupSocket();
-    throw new InternalServerErrorException('Drone connection failed');
-  }
-
-  private cleanupSocket(): void {
-    if (this.droneSocket) {
-      this.droneSocket.disconnect();
-      this.droneSocket.removeAllListeners();
-      this.droneSocket = null;
+      console.error('Error connecting to drone socket:', error);
+      const errMsg =
+        error.response?.message || error.message || 'Unknown error';
+      const code = error.status || 500;
+      throwException(code, errMsg);
     }
   }
 
@@ -504,6 +412,7 @@ export class FleetService {
 
   // This method is to mark the pre-flight checklist as done.
   async completeChecklist(req: Request, token: string, updates: Record<number, any>) {
+    console.log("UPDATES", updates);
     const url = this.config.get<string>('CLEARSKY_CLIENT_SOCKET_URL');
     let socket: Socket;
 
@@ -698,6 +607,7 @@ export class FleetService {
     userJwt: string,
     updates: Record<number, any>,
   ): Promise<{ status: string; message: string }> {
+    console.log("POST FLIGHT DATA", updates, userJwt)
     const updObj = (updates as any).updates ?? updates;
 
     const url = this.config.get<string>('CLEARSKY_CLIENT_SOCKET_URL');

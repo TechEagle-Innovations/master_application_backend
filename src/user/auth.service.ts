@@ -53,7 +53,7 @@ export class AuthService {
 
   async loginClearskyUser(email: string, password: string) {
     try {
-      const response = await axios(`${process.env.CLEARSKY_BACKEND_IP}/admin/login`, {
+      const response = await axios(`${process.env.CLEAR_SKY_BACKEND_URL}/admin/login`, {
         method: "POST",
         data: { useremail: email, password }
       });

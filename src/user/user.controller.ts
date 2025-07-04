@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards, Get, UnauthorizedException, HttpCode, HttpStatus, Request } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Get, UnauthorizedException, HttpCode, HttpStatus, Request, Query } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UserService } from './user.service';
 import { LoginDto } from './dto/login.dto';
@@ -62,14 +62,14 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @Post('logout')
   @HttpCode(HttpStatus.OK)
-  async logout(@Request() req) {
+  async logout(@Request() req ) {
     return this.authService.logout(req.user.sub);
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('profile')
-  getProfile() {
-    return { message: 'This is a protected route accessible to all authenticated users' };
+  getProfile(@Query('email') email: string) {
+    return this.userService.findByEmail(email)
   }
 
   // Example of a protected route without role restrictions
