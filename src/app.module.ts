@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Injectable, Logger, Module, OnModuleInit } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -9,6 +9,30 @@ import { NodeModule } from './node/node.module';
 import { DroneModule } from './drone/drone.module';
 import { FleetModule } from './fleet/fleet.module';
 import { MaintainanceModule } from './maintainance/maintainance.module';
+import { ScheduleModule, Cron, CronExpression } from '@nestjs/schedule';
+import refresh from 'src/utility/update-clearsky-token';
+
+
+@Injectable()
+class ClearSkyCronService implements OnModuleInit {
+  private readonly logger = new Logger(ClearSkyCronService.name);
+
+  constructor(private readonly cfg: ConfigService) {}
+
+  onModuleInit() {
+    return this.run();          
+  }
+
+  @Cron(CronExpression.EVERY_2_HOURS)
+  // @Cron('*/5 * * * * *') // every 5 seconds
+  run() {
+    const email = this.cfg.get<string>('CLEARSKY_USER');
+    const password = this.cfg.get<string>('CLEARSKY_PASS');
+    return refresh({ useremail: email, password }).catch(err =>
+      this.logger.error(err.message),
+    );
+  }
+}
 
 @Module({
   imports: [
@@ -16,6 +40,7 @@ import { MaintainanceModule } from './maintainance/maintainance.module';
       isGlobal: true,
       envFilePath: '.env',
     }),
+    ScheduleModule.forRoot(),
     // MongooseModule.forRoot("mongodb://localhost/testLocation"),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
@@ -43,6 +68,6 @@ import { MaintainanceModule } from './maintainance/maintainance.module';
     MaintainanceModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, ClearSkyCronService],
 })
 export class AppModule {}
