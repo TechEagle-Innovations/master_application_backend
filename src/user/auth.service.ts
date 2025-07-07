@@ -5,6 +5,8 @@ import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { UserInfo, UserInfoDocument } from '../schema/user/userInfo.schema';
 import { LogoutDto } from './dto/logout.dto';
+import { OtpGenerator } from 'src/emailService/generateOtp';
+import { EmailTemplate } from 'src/emailService/emailTemplate';
 import axios from 'axios';
 import { Cron, CronExpression } from '@nestjs/schedule';
 
@@ -13,9 +15,10 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class AuthService {
+  otpGenerator = new OtpGenerator()
   constructor(
     @InjectModel(UserInfo.name) private userModel: Model<UserInfoDocument>,
-    private jwtService: JwtService,
+    private jwtService: JwtService, private emailTemplate: EmailTemplate
   ) { }
 
   async validateUser(email: string, password: string): Promise<any> {
@@ -152,22 +155,38 @@ export class AuthService {
         // Optionally, log this event for monitoring
         throw new UnauthorizedException('Invalid email');
       }
+      const generateOtp = await this.otpGenerator.generateOtp(user)
+        // console.log(generateOtp)
+        const emailTemplate = await this.emailTemplate.passwordChangeOTPEmail(user.userName, user.useremail, generateOtp)
+        // console.log("emailTempalte", emailTemplate)
+        const sentEmail = await axios({
+          url: "http://localhost:9999/notification/Send_notification",
+          method: "POST",
+          headers: {
+            // authorization: userCookie.token,
+          },
+          data: emailTemplate
+        })
+        // console.log("email Sent", sentEmail.data)
+        if (sentEmail.data.status === "failed") {
+          return { message: "Failed to send Email" }
+        }
 
       // Throttle: Prevent too frequent OTP requests
       // if (user.resetPasswordOtpExpires && user.resetPasswordOtpExpires > new Date(Date.now() - 9 * 60 * 1000)) {
       //   throw new Error('OTP recently sent. Please wait before requesting again.');
       // }
 
-      const otp = (Math.floor(100000 + Math.random() * 900000)).toString();
-      user.resetPasswordOtp = otp;
-      user.resetPasswordOtpExpires = new Date(Date.now() + 10 * 60 * 1000);
-      user.resetPasswordOtpVerified = false;
-      await user.save();
+      // const otp = (Math.floor(100000 + Math.random() * 900000)).toString();
+      // user.resetPasswordOtp = otp;
+      // user.resetPasswordOtpExpires = new Date(Date.now() + 10 * 60 * 1000);
+      // user.resetPasswordOtpVerified = false;
+      // await user.save();
 
       // TODO: Send OTP via email (handle email errors separately)
       // await this.emailService.sendOtp(user.useremail, otp);
 
-      return { message: 'If the email exists, an OTP has been sent.' };
+      return { message: 'OTP has been sent to your email' };
   
   }
 
@@ -177,37 +196,70 @@ export class AuthService {
     if (!user) {
       throw new NotFoundException('Invalid email');
     }
-    if (
-      !user.resetPasswordOtp ||
-      user.resetPasswordOtp !== otp ||
-      !user.resetPasswordOtpExpires ||
-      user.resetPasswordOtpExpires < new Date()
-    ) {
-      throw new UnauthorizedException('Invalid or expired OTP');
+    console.log("userEmail", user)
+    const userData = {
+      useremail: user.useremail,
+      otp: otp,
     }
-
-    user.resetPasswordOtpVerified = true;
-    await user.save();
-
-    return { message: 'OTP verified successfully' };
+    const verifyOtp = await this.otpGenerator.verifyOtp(userData)
+    if (verifyOtp.status === "success") {
+      // Mark OTP as verified in the database
+      user.resetPasswordOtpVerified = true;
+      user.resetPasswordExpires = new Date(Date.now() + 10 * 60 * 1000); // Set expiry for password reset session
+      await user.save();
+      console.log(`OTP verified and marked as verified for user: ${user.useremail}`);
+      return { message: "OTP Verified successfully" }
+    } else {
+      return { message: verifyOtp.message }
+    }
   }
 
   async resetPasswordWithOtp(email: string, newPassword: string): Promise<{ message: string }> {
     try {
       const user = await this.userModel.findOne({ useremail: email }).exec();
-      if (!user || !user.resetPasswordOtpVerified) {
-        throw new UnauthorizedException('OTP not verified or session expired');
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+      
+      if (!user.resetPasswordOtpVerified) {
+        throw new UnauthorizedException('OTP not verified. Please verify your OTP first.');
+      }
+
+      // Check if the verification session is still valid (within 10 minutes of OTP verification)
+      if (!user.resetPasswordExpires || user.resetPasswordExpires < new Date()) {
+        throw new UnauthorizedException('OTP verification session expired. Please request a new OTP.');
       }
 
       user.password = await this.hashPassword(newPassword);
-      user.resetPasswordOtp = undefined;
-      user.resetPasswordOtpExpires = undefined;
+      // Reset the OTP verification status after successful password reset
       user.resetPasswordOtpVerified = false;
+      user.resetPasswordExpires = undefined;
       await user.save();
 
+      // Send password change confirmation email
+      try {
+        const emailTemplate = await this.emailTemplate.passwordChangedEmail(user.userName, user.useremail);
+        const sentEmail = await axios({
+          url: "http://localhost:9999/notification/Send_notification",
+          method: "POST",
+          headers: {},
+          data: emailTemplate
+        });
+        
+        if (sentEmail.data.status === "failed") {
+          console.log(`Failed to send password change confirmation email to ${user.useremail}`);
+        } else {
+          console.log(`Password change confirmation email sent to ${user.useremail}`);
+        }
+      } catch (emailError) {
+        console.error('Error sending password change confirmation email:', emailError);
+        // Don't throw error for email failure, password reset is still successful
+      }
+
+      console.log(`Password reset successfully for user: ${user.useremail}`);
       return { message: 'Password has been reset successfully' };
     } catch (error) {
-      if (error instanceof UnauthorizedException) throw error;
+      if (error instanceof UnauthorizedException || error instanceof NotFoundException) throw error;
       console.error('Error in resetPasswordWithOtp:', error);
       throw new InternalServerErrorException('Could not reset password.');
     }
