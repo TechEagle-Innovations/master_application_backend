@@ -68,17 +68,17 @@ export class DroneService {
   // This method retrieves all drones based on the provided GetAllDroneDto. It fetches data from the Clear Sky API.
   async allDrone(getAllDroneDto: GetAllDroneDto) {
     try {
-      if (
-        this.allDrones.data.length > 0 &&
-        Date.now() - this.allDrones.cachedAt < this.TTL
-      ) {
-        console.log('Returning cached drone data');
-        return {
-          status: 'success',
-          message: 'All drones fetched successfully',
-          data: this.allDrones.data,
-        };
-      }
+      //if (
+      //   this.allDrones.data.length > 0 &&
+      //   Date.now() - this.allDrones.cachedAt < this.TTL
+      // ) {
+      //   console.log('Returning cached drone data');
+      //   return {
+      //     status: 'success',
+      //     message: 'All drones fetched successfully',
+      //     data: this.allDrones.data,
+      //   };
+      // }
       const clearskyResponse = await this.getAllDrones();
       if (!clearskyResponse) {
         throw new InternalServerErrorException(
@@ -117,17 +117,17 @@ export class DroneService {
         );
       }
 
-      const cache = this.droneCache[location]; // Check if the data is cached and still valid
+      // const cache = this.droneCache[location]; // Check if the data is cached and still valid
 
-      if (cache && Date.now() - cache.cachedAt < this.TTL) {
-        console.log('Returning cached data for location:', this.droneCache);
+      // if (cache && Date.now() - cache.cachedAt < this.TTL) {
+      //   console.log('Returning cached data for location:', this.droneCache);
 
-        return {
-          status: 'success',
-          message: `All commissioned drones at hub location ${location} fetched successfully`,
-          data: cache.data,
-        };
-      }
+      //   return {
+      //     status: 'success',
+      //     message: `All commissioned drones at hub location ${location} fetched successfully`,
+      //     data: cache.data,
+      //   };
+      // }
       console.log('Fetching new drone data for location:', location);
       const dronesData = await this.getAllDrones();
       if (!dronesData || !Array.isArray(dronesData)) {
