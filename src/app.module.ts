@@ -9,6 +9,7 @@ import { NodeModule } from './node/node.module';
 import { DroneModule } from './drone/drone.module';
 import { FleetModule } from './fleet/fleet.module';
 import { MaintainanceModule } from './maintainance/maintainance.module';
+import { NotificationModule } from './notification/notification.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { MaintainanceModule } from './maintainance/maintainance.module';
     DroneModule,
     FleetModule,
     MaintainanceModule,
+    NotificationModule,
   ],
   controllers: [AppController],
   providers: [AppService],
