@@ -6,12 +6,15 @@ import { CreateMaintainanceDto } from './dto/create-maintainance.dto';
 import { ReportIssueDto } from './dto/report-issue.dto';
 import { FilterMaintainanceDto } from './dto/filter-maintainance.dto';
 import { UpdateMaintainanceDto } from './dto/update-maintainance.dto';
+import { DroneImagesAI, DroneImagesAIDocument } from '../schema/maintainance/droneImagesai.schema';
 
 @Injectable()
 export class MaintainanceService {
   constructor(
     @InjectModel(DroneMaintenance.name)
     private readonly maintainanceModel: Model<DroneMaintenanceDocument>,
+    @InjectModel(DroneImagesAI.name)
+    private readonly droneImagesAIModel: Model<DroneImagesAIDocument>,
   ) {}
 
   async createRegular(dto: CreateMaintainanceDto) {
@@ -48,6 +51,34 @@ export class MaintainanceService {
     } catch (err) {
       throw new InternalServerErrorException('Failed to report issue', err.message);
     }
+  }
+
+  async createDroneImagesAI(body: any) {
+    if (!body.droneId || typeof body.droneId !== 'string') {
+      throw new BadRequestException('droneId is required and must be a string');
+    }
+    if (!body.imageParts || typeof body.imageParts !== 'object') {
+      throw new BadRequestException('imageParts is required and must be an object');
+    }
+    const exists = await this.droneImagesAIModel.findOne({ droneId: body.droneId });
+    if (exists) {
+      throw new BadRequestException('Record for this droneId already exists');
+    }
+    try {
+      const created = new this.droneImagesAIModel(body);
+      return await created.save();
+    } catch (err) {
+      throw new InternalServerErrorException('Failed to create DroneImagesAI record', err.message);
+    }
+  }
+
+  async getDroneImagesAIByDroneId(droneId: string) {
+    if (!droneId || typeof droneId !== 'string') {
+      throw new BadRequestException('droneId is required and must be a string');
+    }
+    const record = await this.droneImagesAIModel.findOne({ droneId });
+    if (!record) throw new NotFoundException('DroneImagesAI record not found');
+    return record;
   }
 
   async findAll(filter: FilterMaintainanceDto) {
