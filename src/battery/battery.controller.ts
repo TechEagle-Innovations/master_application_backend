@@ -1,8 +1,8 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, Body, UseGuards, Req, UsePipes, ValidationPipe } from '@nestjs/common';
 import { BatteryService } from './battery.service';
 import { Battery } from '../schema/battery.schema';
 import { JwtAuthGuard } from 'src/user/guards/jwt-auth.guard';
-import { CreateBatteryDto, FlightHistoryDto } from './dto/create-battery.dto';
+import { ChargeHistoryDto, CreateBatteryDto, DisconnectBatteryDto, FlightHistoryDto } from './dto/create-battery.dto';
 import { Request } from 'express';
 
 @Controller('batteries')
@@ -35,5 +35,20 @@ export class BatteryController {
   @Put('connect')
   connect(@Body() body: FlightHistoryDto, @Req() req: Request) {
     return this.batteryService.connect(body, req);
+  }
+  @UseGuards(JwtAuthGuard)
+  @Put('disconnect')
+  disconnect(@Body() body: DisconnectBatteryDto, @Req() req: Request) {
+    return this.batteryService.disconnect(body, req);
+  }
+
+  @UseGuards(JwtAuthGuard)
+    @Post('charge-history/:battery_id')
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async addChargeHistory(
+    @Param('battery_id') batteryId: string,
+    @Body() dto: ChargeHistoryDto
+  ) {
+    return this.batteryService.addChargeHistory(batteryId, dto);
   }
 }

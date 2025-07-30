@@ -7,7 +7,12 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Battery, BatteryDocument } from '../schema/battery.schema';
-import { CreateBatteryDto, FlightHistoryDto } from './dto/create-battery.dto';
+import {
+  ChargeHistoryDto,
+  CreateBatteryDto,
+  DisconnectBatteryDto,
+  FlightHistoryDto,
+} from './dto/create-battery.dto';
 import { Request } from 'express';
 import { throwException } from 'src/utility/throwError';
 
@@ -116,7 +121,7 @@ export class BatteryService {
     const hublocation = user.location;
     const curLocation = user.curLocation;
     //get the battery ids from the body
-    const batteryIdArray = body.all_Battery;
+    const batteryIdArray = body.all_battery;
     const numberOfBatteries = batteryIdArray.length;
     if (
       !batteryIdArray ||
@@ -126,11 +131,13 @@ export class BatteryService {
       throw new BadRequestException('Invalid or missing battery IDs');
     }
     try {
-     let fetchBatteries: BatteryDocument[] = [];
+      let fetchBatteries: BatteryDocument[] = [];
 
       // Fetch all batteries with the given battery IDs
-     for (const batteryId of batteryIdArray) {
-        const battery = await this.batteryModel.findOne({ battery_id: batteryId });
+      for (const batteryId of batteryIdArray) {
+        const battery = await this.batteryModel.findOne({
+          battery_id: batteryId,
+        });
         if (!battery) {
           throw new NotFoundException(`Battery with ID ${batteryId} not found`);
         }
@@ -138,7 +145,6 @@ export class BatteryService {
       }
       // Validate each battery's status and voltage
       for (const battery of fetchBatteries) {
-  
         if (battery.charged_status !== 'charged') {
           throw new BadRequestException(
             `Battery with ID ${battery.battery_id} is either not charged, currently charging, currently active in drone or has been discarded`,
@@ -172,7 +178,9 @@ export class BatteryService {
               `Failed to update battery with ID ${battery.battery_id}`,
             );
           }
-          console.log(`Battery with ID ${battery.battery_id} connected successfully`);
+          console.log(
+            `Battery with ID ${battery.battery_id} connected successfully`,
+          );
         }
         return {
           status: 'success',
@@ -186,6 +194,256 @@ export class BatteryService {
         error.response?.message || error.message || 'Unknown error';
       const code = error.status || 500;
       throwException(code, errMsg);
+    }
+  }
+
+  async disconnect(body: DisconnectBatteryDto, req: Request) {
+    try {
+      // fetch the batteries from the database
+      const batteryIdArray = body.all_Battery;
+      if (
+        !batteryIdArray ||
+        !Array.isArray(batteryIdArray) ||
+        batteryIdArray.length === 0
+      ) {
+        throw new BadRequestException('Invalid or missing battery IDs');
+      }
+      const fetchBatteries: BatteryDocument[] = [];
+      for (const batteryId of batteryIdArray) {
+        const battery = await this.batteryModel.findOne({
+          battery_id: batteryId,
+        });
+        if (!battery) {
+          throw new NotFoundException(`Battery with ID ${batteryId} not found`);
+        }
+        fetchBatteries.push(battery);
+      }
+      // check for same current flight id
+      const currentFlightId = fetchBatteries[0].current_flight_id;
+      // if (!currentFlightId) {
+      //   throw new BadRequestException('No current flight ID found for the batteries');
+      // }
+      for (const battery of fetchBatteries) {
+        if (battery.current_flight_id !== currentFlightId) {
+          throw new BadRequestException(
+            `Battery with ID ${battery.battery_id} is not connected to the same flight`,
+          );
+        }
+      }
+
+      // iterate throught the battery voltage map and update the battery status
+      if (!body.batteryVoltages) {
+        throw new BadRequestException('Invalid or missing battery voltages');
+      }
+      const batteryVoltages = body.batteryVoltages;
+      Object.entries(batteryVoltages).forEach(([key, value]) => {
+        if (typeof value !== 'number') {
+          throw new BadRequestException(`Invalid voltage for battery ${key}`);
+        }
+        const battery = fetchBatteries.find((b) => b.battery_id === key);
+        if (!battery) {
+          throw new NotFoundException(`Battery with ID ${key} not found`);
+        } else {
+          if (value < 23) {
+            battery.charged_status = 'discharged';
+            battery.current_voltage = value;
+          } else {
+            battery.charged_status = 'charged';
+            battery.current_voltage = value;
+          }
+          battery.current_flight_id = null; // Clear current flight ID
+          battery.locationId = body.end_location; // Update location
+        }
+      });
+      // Update chargind status as per the volatages in the body and make current flight null with the updated location of the battery
+      for (const battery of fetchBatteries) {
+        const updatedBattery = await battery.save();
+        if (!updatedBattery) {
+          throw new InternalServerErrorException(
+            `Failed to update battery with ID ${battery.battery_id}`,
+          );
+        }
+      }
+      return {
+        status: 'success',
+        message: `${fetchBatteries.length} batteries disconnected successfully`,
+        data: fetchBatteries.map((b) => ({ battery_id: b.battery_id })),
+      };
+    } catch (error) {
+      console.error(`Error disconnecting battery:`, error);
+      const errMsg =
+        error.response?.message || error.message || 'Unknown error';
+      const code = error.status || 500;
+      throwException(code, errMsg);
+    }
+  }
+
+  async startCharging(batteryId: string, req: Request) {
+    try {
+      // Fetch the battery by ID
+      const battery = await this.batteryModel.findOne({ battery_id: batteryId });
+      if (!battery) {
+        throw new NotFoundException(`Battery with ID ${batteryId} not found`);
+      } else if (battery.charged_status === 'charging' || battery.charged_status === 'active' || battery.charged_status === 'discarded') {
+        throw new BadRequestException(
+          `Battery with ID ${batteryId} is not in a state to start charging either because it is already charging, currently active in a drone, or has been discarded`,
+        );
+      } else {
+        // Update the battery status to charging
+        battery.charged_status = 'charging';
+        // Save the updated battery
+        const updatedBattery = await battery.save();
+        if (!updatedBattery) {
+          throw new InternalServerErrorException(
+            `Failed to start charging for battery ${batteryId}`,
+          );
+        }
+        return {
+          status: 'success',
+          message: `Battery ${batteryId} is now charging`,
+          data: {
+            battery_id: batteryId,
+            charged_status: updatedBattery.charged_status,
+          },
+        };
+      }
+    } catch (error) {
+      console.error(`Error starting charging for battery ${batteryId}:`, error);
+      const errMsg =
+        error.response?.message || error.message || 'Unknown error';
+      const code = error.status || 500;
+      throwException(code, errMsg);
+    }
+  }
+
+  async addChargeHistory(batteryId: string, dto: ChargeHistoryDto) {
+    try {
+      // 1. Fetch battery
+      const battery = await this.batteryModel.findOne({
+        battery_id: batteryId,
+      });
+      if (!battery) {
+        throw new NotFoundException(`Battery with ID ${batteryId} not found`);
+      }
+      if (battery.charged_status !== 'charging') {
+        throw new BadRequestException(
+          `Battery with ID ${batteryId} is not currently charging`,
+        );
+      }
+
+      // 2. Validate times
+      const { charge_start_time, charge_end_time } = dto;
+      if (charge_end_time <= charge_start_time) {
+        throw new BadRequestException(
+          'charge_end_time must be after charge_start_time',
+        );
+      }
+
+      // 3. Compute charging hours (fractional hours)
+      const msDiff = charge_end_time.getTime() - charge_start_time.getTime();
+      const charging_hours = msDiff / (1000 * 60 * 60);
+
+      // 4. Build the new history record
+      const newHistory = {
+        ...dto,
+        charging_hours,
+      };
+
+      // 5. Push into history array
+      battery.history.push(newHistory);
+
+      // 6. Update current_voltage to the latest voltage_after_charge
+      battery.current_voltage = dto.voltage_after_charge;
+
+      // 7. Recompute curr_max_vdiff across all history entries
+      battery.curr_max_vdiff = battery.history.reduce(
+        (max, h: any) => Math.max(max, h.maxVdiff),
+        battery.curr_max_vdiff || 0,
+      );
+
+      // 8. updated the cycle count by incrementing it by 1
+      battery.cycle_count = (battery.cycle_count || 0) + 1;
+
+      // 9. Save and return
+      const updated = await battery.save();
+      if (!updated) {
+        throw new InternalServerErrorException(
+          `Failed to save charge history for battery ${batteryId}`,
+        );
+      }
+
+      return {
+        status: 'success',
+        message: `Charge history added to battery ${batteryId}`,
+        data: {
+          battery_id: batteryId,
+          charging_hours,
+          current_voltage: updated.current_voltage,
+          curr_max_vdiff: updated.curr_max_vdiff,
+        },
+      };
+    } catch (error) {
+      console.error(
+        `Error adding charge history for battery ${batteryId}:`,
+        error,
+      );
+      const errMsg =
+        error.response?.message || error.message || 'Unknown error';
+      const code = error.status || 500;
+      throwException(code, errMsg);
+    }
+  }
+
+  async getBatteryById(batteryId: string) {
+   try {
+     const battery = await this.batteryModel.findOne({ battery_id: batteryId });
+     if (!battery) {
+       throw new NotFoundException(`Battery with ID ${batteryId} not found`);
+     }
+     return {
+       status: 'success',
+       message: `Battery with ID ${batteryId} found`,
+       data: battery,
+     }
+   } catch (error) {
+     console.error(`Error fetching battery with ID ${batteryId}:`, error);
+     const errMsg = error.response?.message || error.message || 'Unknown error';
+     const code = error.status || 500;
+     throwException(code, errMsg);
+    
+   }
+  }
+
+  async dicardBattery(batteryId: string, req: Request) {
+    try {
+      const battery = await this.batteryModel.findOne({ battery_id: batteryId });
+      if (!battery) {
+        throw new NotFoundException(`Battery with ID ${batteryId} not found`);
+      }
+      if (battery.charged_status === 'discarded') {
+        throw new BadRequestException(
+          `Battery with ID ${batteryId} is already discarded`,
+        );    }
+      const updatedBattery = await battery.save();
+      if (!updatedBattery) {
+        throw new InternalServerErrorException(
+          `Failed to discard battery with ID ${batteryId}`,
+        );
+      }
+      return {    
+        status: 'success',
+        message: `Battery with ID ${batteryId} has been discarded`,
+        data: {
+          battery_id: batteryId,
+          charged_status: updatedBattery.charged_status,
+        },
+      };
+    } catch (error) {
+      console.error(`Error discarding battery with ID ${batteryId}:`, error);   
+      const errMsg =
+        error.response?.message || error.message || 'Unknown error';
+      const code = error.status || 500;
+      throwException(code, errMsg); 
     }
   }
 }

@@ -6,8 +6,11 @@ import {
   IsArray,
   ValidateNested,
   isArray,
+  IsObject,
+  IsISO8601,
+  IsDefined,
 } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 
 export class CellVoltageDto {
   @IsNumber() v1: number;
@@ -18,25 +21,21 @@ export class CellVoltageDto {
   @IsNumber() v6: number;
 }
 
-export class ChargeHistoryDto {
-  @IsOptional() @Type(() => Date) charge_start_time?: Date;
-  @IsOptional() @Type(() => Date) charge_end_time?: Date;
 
-  @IsOptional() cell_voltage?: Map<string, number>;
-
-  @IsOptional() @IsNumber() maxVdiff?: number;
-  @IsOptional() @IsNumber() voltage_before_charge?: number;
-  @IsOptional() @IsNumber() voltage_after_charge?: number;
-
-  @IsOptional() @IsString() remark?: string;
-  @IsOptional() @IsString() monitor_by?: string;
-}
 
 export class FlightHistoryDto {
-    @IsArray() all_Battery: string[];
+    @IsArray() all_battery: string[];
    @IsString() flightId: string;
    @IsString() droneId: string;
    //@IsString() installed_by?: string;
+}
+
+
+
+export class DisconnectBatteryDto {
+    @IsArray() @IsString({ each: true }) all_Battery: string[];
+    @IsObject() batteryVoltages: Record<string, number>;
+    @IsString() end_location: string;
 }
 
 export class CreateBatteryDto {
@@ -55,4 +54,35 @@ export class CreateBatteryDto {
   @IsNumber() current_voltage: number;
 
   @IsNumber() curr_max_vdiff?: number;
+}
+
+export class ChargeHistoryDto {
+  @IsDefined()
+  @IsISO8601()
+  @Transform(({ value }) => new Date(value))
+  charge_start_time: Date;
+
+  @IsDefined()
+  @IsISO8601()
+  @Transform(({ value }) => new Date(value))
+  charge_end_time: Date;
+
+  @IsDefined()
+  @IsObject()
+  cell_voltage: Record<string, number>;
+
+  @IsNumber()
+  maxVdiff: number;
+
+  @IsNumber()
+  voltage_before_charge: number;
+
+  @IsNumber()
+  voltage_after_charge: number;
+
+  @IsString()
+  remark: string;
+
+  @IsString()
+  monitor_by: string;
 }

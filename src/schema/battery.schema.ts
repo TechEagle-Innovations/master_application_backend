@@ -7,9 +7,10 @@ export type BatteryDocument = Battery & Document;
 class ChargeHistory {
   @Prop() charge_start_time: Date;
   @Prop() charge_end_time: Date;
+  @Prop() charging_hours: number;
 
-  @Prop({ type: Map, of: Number })
-  cell_voltage: Map<string, number>;
+  @Prop()
+  cell_voltage: Record<string, number>;
 
   @Prop() maxVdiff: number;
   @Prop() voltage_before_charge: number;
