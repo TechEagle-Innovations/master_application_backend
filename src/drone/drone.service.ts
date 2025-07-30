@@ -34,7 +34,7 @@ export class DroneService {
           'API key for Clear Sky is not set in environment variables.',
         );
       }
-      console.log("URL", this.CLEARSKY_BASE_URL);
+      console.log('URL', this.CLEARSKY_BASE_URL);
       const data = await fetch(
         `${this.CLEARSKY_BASE_URL}/drone/get_all_drones`,
         {
@@ -51,7 +51,7 @@ export class DroneService {
         );
       }
       const response = await data.json();
-       console.log('Drone data:', response);
+      console.log('Drone data:', response);
       return response.data;
     } catch (error) {
       console.error('Error fetching drones:', error);
@@ -112,9 +112,7 @@ export class DroneService {
       }
       const location = user.location; // Assuming the user's location is stored in the request object
       if (!location) {
-        throw new NotFoundException(
-          'Location is not provided in the request.',
-        );
+        throw new NotFoundException('Location is not provided in the request.');
       }
 
       // const cache = this.droneCache[location]; // Check if the data is cached and still valid
@@ -176,9 +174,7 @@ export class DroneService {
       }
       const location = user.location; // Assuming the user's location is stored in the request object
       if (!location) {
-        throw new NotFoundException(
-          'Location is not provided in the request.',
-        );
+        throw new NotFoundException('Location is not provided in the request.');
       }
       const allDronesAtHub = await this.getAllDrones();
       if (!allDronesAtHub || !Array.isArray(allDronesAtHub)) {

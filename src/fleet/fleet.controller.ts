@@ -29,6 +29,14 @@ export class FleetController {
     return this.fleetService.flightHistoryOfDrone(req, id);
   }
 
+   // This endpoint fetches all flight history for a specific location.
+  @UseGuards(JwtAuthGuard)
+  @Get('flight-location/:id')
+  flightHistoryLocation(@Req() req: Request, @Param('id') id: string) {
+    console.log('Fetching flight history for location ID:', id);
+    return this.fleetService.flightHistoryOfLocation(req, id);
+  }
+
   // This endpoint fetches pre-flight checklist.
   @UseGuards(JwtAuthGuard)
   @Get('preflight')
@@ -84,4 +92,21 @@ export class FleetController {
     const token = req.headers['x-auth-clearsky'] as string;
     return await this.fleetService.completePostflightChecklist(req, token, updates);
   }
+
+    @UseGuards(JwtAuthGuard)
+  @Post('sync-shipment')
+  async syncShipment(
+    @Req() req: Request,
+  ) {
+    const response = await this.fleetService.syncPendingShipments();
+    return response;
+  }
+@UseGuards(JwtAuthGuard)
+  @Get('my-shipments')
+async list(@Req() req: Request) {
+  const result = await this.fleetService.shipmentsForUserLocation(req);
+  return result
+}
+
+
 }

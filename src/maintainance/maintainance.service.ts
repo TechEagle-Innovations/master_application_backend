@@ -1,17 +1,23 @@
 import { Injectable, NotFoundException, BadRequestException, InternalServerErrorException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, FilterQuery, isValidObjectId } from 'mongoose';
+import { Model, FilterQuery, isValidObjectId, Types } from 'mongoose';
 import { DroneMaintenance, DroneMaintenanceDocument } from '../schema/maintainance/droneMaintenance.schema';
 import { CreateMaintainanceDto } from './dto/create-maintainance.dto';
 import { ReportIssueDto } from './dto/report-issue.dto';
 import { FilterMaintainanceDto } from './dto/filter-maintainance.dto';
 import { UpdateMaintainanceDto } from './dto/update-maintainance.dto';
+import { DroneService } from 'src/drone/drone.service';
+import { FleetService } from 'src/fleet/fleet.service';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import dayjs from 'dayjs';
 
 @Injectable()
 export class MaintainanceService {
   constructor(
     @InjectModel(DroneMaintenance.name)
     private readonly maintainanceModel: Model<DroneMaintenanceDocument>,
+    private readonly droneService: DroneService,
+    private readonly flightService: FleetService,
   ) {}
 
   async createRegular(dto: CreateMaintainanceDto) {
@@ -102,6 +108,40 @@ export class MaintainanceService {
       return deleted;
     } catch (err) {
       throw new InternalServerErrorException('Failed to delete maintenance record', err.message);
+    }
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  async scheduleDailyMaintenance() {
+    try {
+      const drones = await this.droneService.getAllDrones();
+      for (const d of drones) {
+        const droneId = d._id.toString();
+
+        const lastM = await this.maintainanceModel
+          .findOne({ droneId: new Types.ObjectId(droneId), maintenanceType: 'REGULAR' })
+          .sort({ scheduledDate: -1 })
+          .exec();
+
+      
+        const staticCutoff = dayjs('2025-07-06T00:00:00.000Z');
+        const cutoff = lastM
+          ? dayjs(lastM.scheduledDate)
+          : staticCutoff;
+
+        const flights = await this.flightService.fetchAllFlight();
+        const count = flights.filter(
+          (f: any) =>
+            f.drone_id === droneId &&
+            dayjs(f.date_created).isAfter(cutoff),
+        ).length;
+
+        if (count > 10) {
+          await this.createRegular({ droneId, scheduledDate: dayjs().toDate() });
+        }
+      }
+    } catch (err) {
+      throw new InternalServerErrorException('Failed to schedule maintenance: ' + err.message);
     }
   }
 } 

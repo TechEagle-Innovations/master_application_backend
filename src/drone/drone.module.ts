@@ -8,5 +8,6 @@ import { JwtAuthGuard } from 'src/user/guards/jwt-auth.guard';
   imports: [UserModule],
   controllers: [DroneController],
   providers: [DroneService, JwtAuthGuard],
+  exports: [DroneService]
 })
 export class DroneModule {}

@@ -7,6 +7,7 @@ import { UserInfo, UserInfoDocument } from '../schema/user/userInfo.schema';
 import { LogoutDto } from './dto/logout.dto';
 import axios from 'axios';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { HubLocation } from 'src/schema/location/hublocation.schema';
 
 // NOTE: Make sure to install @nestjs/schedule and add ScheduleModule.forRoot() to your AppModule imports for cron jobs to work.
 // import { ScheduleModule } from '@nestjs/schedule';
@@ -72,7 +73,8 @@ export class AuthService {
       userName: user.userName,
       permission: user.permission,
       designation: user.designation,
-      location: user.location
+      location: user.hub_location,
+      curLocation: user.location
     };
 
     // Generate access token and refresh token
@@ -92,6 +94,7 @@ export class AuthService {
         userName: user.userName,
         permission: user.permission,
         location: user.location,
+        hubLocation: user.hub_location,
         designation: user.designation
       }
     };

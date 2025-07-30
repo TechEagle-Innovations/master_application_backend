@@ -24,7 +24,9 @@ export class UserInfo {
   @Prop({ required: true })
   userName: string;
 
-
+  @Prop({ required: true })
+  hub_location: string;
+  
   @Prop({ required: true })
   location: string;
 
