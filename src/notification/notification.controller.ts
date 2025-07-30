@@ -1,6 +1,7 @@
-import { Controller, Post, Delete, Body, Request, UseGuards, HttpCode, HttpStatus, BadRequestException } from '@nestjs/common';
+import { Controller, Post, Delete, Body, Request, UseGuards, HttpCode, HttpStatus, BadRequestException, ValidationPipe } from '@nestjs/common';
 import { NotificationService } from './notification.service';
 import { JwtAuthGuard } from '../user/guards/jwt-auth.guard';
+import { SendNotificationDto } from './dto/send-notification.dto';
 
 @Controller('notification')
 @UseGuards(JwtAuthGuard)
@@ -15,7 +16,7 @@ export class NotificationController {
     return { message: 'Token registered' };
   }
 
-  @Delete('remove-token')
+  @Post('remove-token')
   @HttpCode(HttpStatus.OK)
   async removeToken(@Request() req, @Body('pushToken') pushToken: string) {
     if (!pushToken) throw new BadRequestException('pushToken is required');
@@ -24,8 +25,10 @@ export class NotificationController {
   }
 
   // Optional: Admin/test endpoint to send notification
-  // @Post('send')
-  // async sendNotification(@Body() body: { pushToken: string, title: string, message: string, data?: any }) {
-  //   return this.notificationService.sendNotification(body.pushToken, body.title, body.message, body.data);
-  // }
+  @Post('send')
+  async sendNotification(@Body(new ValidationPipe()) sendNotificationDto: SendNotificationDto) {
+    const { pushToken, title, body: messageBody, data } = sendNotificationDto;
+    console.log("PUSHTOKEN", pushToken, title, messageBody, data );
+    return this.notificationService.sendNotification(pushToken, title, messageBody, data);
+  }
 } 
