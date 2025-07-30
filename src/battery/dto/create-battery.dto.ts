@@ -5,6 +5,7 @@ import {
   IsOptional,
   IsArray,
   ValidateNested,
+  isArray,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -32,10 +33,10 @@ export class ChargeHistoryDto {
 }
 
 export class FlightHistoryDto {
-   @IsString() flightId?: string;
-   @IsString() droneId?: string;
+    @IsArray() all_Battery: string[];
+   @IsString() flightId: string;
+   @IsString() droneId: string;
    @IsString() installed_by?: string;
-  @IsOptional() @IsString() companion_id?: string;
 }
 
 export class CreateBatteryDto {

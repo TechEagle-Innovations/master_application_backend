@@ -22,7 +22,11 @@ export class BatteryService {
    * @param data Required: serialNumber, model, numberOfCells, voltage, capacityMah, locationId
    */
   async create(data: CreateBatteryDto, req: Request) {
-    const user = req.user as { location?: string; email?: string };
+    const user = req.user as {
+      location?: string;
+      email?: string;
+      curLocation?: string;
+    };
     //console.log('USER:', user);
     const mah = data.mah;
     const voltage = data.voltage;
@@ -30,7 +34,6 @@ export class BatteryService {
     const type = batteryType === 'lipo' ? 'LP' : 'LI';
     const wh = (mah * voltage) / 1000;
     const whNonDecimal = Math.floor(wh);
-  
 
     try {
       const count = await this.batteryModel.countDocuments();
@@ -53,13 +56,15 @@ export class BatteryService {
       }
       const location = user.location;
       const userID = user.email;
+      const curLocation = user.curLocation;
 
       const battery = new this.batteryModel({
         ...data,
         battery_id: batteryId,
         current_voltage: data.voltage,
         charged_status: currStatus,
-        locationId: location,
+        locationId: curLocation,
+        hubId: location,
         created_by: userID,
       });
       const createdBattery = await battery.save();
@@ -95,29 +100,82 @@ export class BatteryService {
     return found;
   }
 
-  async connect( id: string, body: FlightHistoryDto, req: Request){
-    const user = req.user as { email?: string, location?: string };
+  async connect(body: FlightHistoryDto, req: Request) {
+    const user = req.user as {
+      email?: string;
+      location?: string;
+      curLocation?: string;
+    };
     if (!user) {
       throw new InternalServerErrorException(
         'User is not available in the request object.',
       );
     }
+    //get user email, hub location and cuurent location from the request
     const userID = user.email;
-    const location = user.location;
-
-    const battery = await this.batteryModel.find({ battery_id: id, locationId: location }).exec();
-    if (!battery) {
-      throw new NotFoundException(`Battery with ID ${id} not found at location ${location}`);
+    const hublocation = user.location;
+    const curLocation = user.curLocation;
+    //get the battery ids from the body
+    const batteryIdArray = body.all_Battery;
+    const numberOfBatteries = batteryIdArray.length;
+    if (
+      !batteryIdArray ||
+      !Array.isArray(batteryIdArray) ||
+      numberOfBatteries === 0
+    ) {
+      throw new BadRequestException('Invalid or missing battery IDs');
     }
-
-    // battery.current_flight_id = body.flightId;
-    // battery.flight_history.push({
-    //   flightId: body.flightId,
-    //   droneId: body.droneId,
-    //   installed_by: userID,
-    //   companion_id: body.companion_id,
-    // });
-
-    // return battery.save();
-  } 
+    try {
+      for (const batteryId of batteryIdArray) {
+        // Check if the battery exists
+        const battery = await this.batteryModel
+          .findOne({ battery_id: batteryId, locationId: curLocation })
+          .exec();
+        if (!battery) {
+          throw new NotFoundException(
+            `Battery with ID ${batteryId} not found at location ${curLocation}`,
+          );
+        }
+        if (battery.charged_status !== 'charged') {
+          throw new BadRequestException(
+            `Battery with ID ${batteryId} is not charged`,
+          );
+        }
+        if (battery.current_voltage < 23) {
+          throw new BadRequestException(
+            `Battery with ID ${batteryId} has low voltage`,
+          );
+        }
+        if (battery.curr_max_vdiff > 1) {
+          throw new BadRequestException(
+            `Battery with ID ${batteryId} has high voltage difference`,
+          );
+        }
+        // Update the battery's current flight ID, charged status and flight history
+        battery.current_flight_id = body.flightId;
+        battery.charged_status = 'active';
+        battery.flight_history.push({
+          flightId: body.flightId,
+          droneId: body.droneId,
+          installed_by: userID,
+          all_Battery: batteryIdArray,
+        });
+        // Save the updated battery
+        const updatedBattery = await battery.save();
+        if (!updatedBattery) {
+          throw new InternalServerErrorException(
+            `Failed to update battery with ID ${batteryId}`,
+          );
+        }
+        console.log(`Battery with ID ${batteryId} connected successfully`);
+      }
+    } catch (error) {
+      console.error(`Error connecting battery :`, error);
+      const errMsg =
+        error.response?.message || error.message || 'Unknown error';
+      const code = error.status || 500;
+      throwException(code, errMsg);
+    }
+  }
+  
 }

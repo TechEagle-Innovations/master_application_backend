@@ -23,7 +23,7 @@ class FlightHistory {
   @Prop() flightId: string;
   @Prop() droneId: string;
   @Prop() installed_by: string;
-  @Prop() companion_id: string;
+  @Prop() all_Battery: string[];
 }
 
 @Schema({ timestamps: true })

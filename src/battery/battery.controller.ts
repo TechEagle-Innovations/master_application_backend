@@ -32,8 +32,8 @@ export class BatteryController {
 
   // connect battery to the drone endpoint
   @UseGuards(JwtAuthGuard)
-  @Put('connect/:id')
-  connect(@Param('id') id: string, @Body() body: FlightHistoryDto, @Req() req: Request) {
-    return this.batteryService.connect(id, body, req);
+  @Put('connect')
+  connect(@Body() body: FlightHistoryDto, @Req() req: Request) {
+    return this.batteryService.connect(body, req);
   }
 }
