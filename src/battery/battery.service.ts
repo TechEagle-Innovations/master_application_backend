@@ -126,48 +126,59 @@ export class BatteryService {
       throw new BadRequestException('Invalid or missing battery IDs');
     }
     try {
-      for (const batteryId of batteryIdArray) {
-        // Check if the battery exists
-        const battery = await this.batteryModel
-          .findOne({ battery_id: batteryId, locationId: curLocation })
-          .exec();
+     let fetchBatteries: BatteryDocument[] = [];
+
+      // Fetch all batteries with the given battery IDs
+     for (const batteryId of batteryIdArray) {
+        const battery = await this.batteryModel.findOne({ battery_id: batteryId });
         if (!battery) {
-          throw new NotFoundException(
-            `Battery with ID ${batteryId} not found at location ${curLocation}`,
-          );
+          throw new NotFoundException(`Battery with ID ${batteryId} not found`);
         }
+        fetchBatteries.push(battery);
+      }
+      // Validate each battery's status and voltage
+      for (const battery of fetchBatteries) {
+  
         if (battery.charged_status !== 'charged') {
           throw new BadRequestException(
-            `Battery with ID ${batteryId} is not charged`,
+            `Battery with ID ${battery.battery_id} is either not charged, currently charging, currently active in drone or has been discarded`,
           );
         }
         if (battery.current_voltage < 23) {
           throw new BadRequestException(
-            `Battery with ID ${batteryId} has low voltage`,
+            `Battery with ID ${battery.battery_id} has low voltage`,
           );
         }
         if (battery.curr_max_vdiff > 1) {
           throw new BadRequestException(
-            `Battery with ID ${batteryId} has high voltage difference`,
+            `Battery with ID ${battery.battery_id} has high voltage difference`,
           );
         }
-        // Update the battery's current flight ID, charged status and flight history
-        battery.current_flight_id = body.flightId;
-        battery.charged_status = 'active';
-        battery.flight_history.push({
-          flightId: body.flightId,
-          droneId: body.droneId,
-          installed_by: userID,
-          all_Battery: batteryIdArray,
-        });
-        // Save the updated battery
-        const updatedBattery = await battery.save();
-        if (!updatedBattery) {
-          throw new InternalServerErrorException(
-            `Failed to update battery with ID ${batteryId}`,
-          );
+        // save the battery updates
+        for (const battery of fetchBatteries) {
+          // Update the battery's current flight ID, charged status and flight history
+          battery.current_flight_id = body.flightId;
+          battery.charged_status = 'active';
+          battery.flight_history.push({
+            flightId: body.flightId,
+            droneId: body.droneId,
+            installed_by: userID,
+            all_Battery: batteryIdArray,
+          });
+          // Save the updated battery
+          const updatedBattery = await battery.save();
+          if (!updatedBattery) {
+            throw new InternalServerErrorException(
+              `Failed to update battery with ID ${battery.battery_id}`,
+            );
+          }
+          console.log(`Battery with ID ${battery.battery_id} connected successfully`);
         }
-        console.log(`Battery with ID ${batteryId} connected successfully`);
+        return {
+          status: 'success',
+          message: `${numberOfBatteries} batteries connected successfully`,
+          data: batteryIdArray.map((id) => ({ battery_id: id })),
+        };
       }
     } catch (error) {
       console.error(`Error connecting battery :`, error);
@@ -177,5 +188,4 @@ export class BatteryService {
       throwException(code, errMsg);
     }
   }
-  
 }

@@ -36,7 +36,7 @@ export class FlightHistoryDto {
     @IsArray() all_Battery: string[];
    @IsString() flightId: string;
    @IsString() droneId: string;
-   @IsString() installed_by?: string;
+   //@IsString() installed_by?: string;
 }
 
 export class CreateBatteryDto {
