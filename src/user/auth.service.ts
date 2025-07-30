@@ -93,8 +93,8 @@ export class AuthService {
         email: user.useremail,
         userName: user.userName,
         permission: user.permission,
-        location: user.location,
-        hubLocation: user.hub_location,
+        location: user.hub_location,
+        curLocation: user.location,
         designation: user.designation
       }
     };
