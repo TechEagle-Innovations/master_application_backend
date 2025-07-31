@@ -9,7 +9,7 @@ class ChargeHistory {
   @Prop() charge_end_time: Date;
   @Prop() charging_hours: number;
 
-  @Prop()
+  @Prop({ type: Map, of: Number })
   cell_voltage: Record<string, number>;
 
   @Prop() maxVdiff: number;

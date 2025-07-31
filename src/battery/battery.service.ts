@@ -278,13 +278,19 @@ export class BatteryService {
     }
   }
 
-  async startCharging(batteryId: string, req: Request) {
+  async startCharging(batteryId: string) {
     try {
       // Fetch the battery by ID
-      const battery = await this.batteryModel.findOne({ battery_id: batteryId });
+      const battery = await this.batteryModel.findOne({
+        battery_id: batteryId,
+      });
       if (!battery) {
         throw new NotFoundException(`Battery with ID ${batteryId} not found`);
-      } else if (battery.charged_status === 'charging' || battery.charged_status === 'active' || battery.charged_status === 'discarded') {
+      } else if (
+        battery.charged_status === 'charging' ||
+        battery.charged_status === 'active' ||
+        battery.charged_status === 'discarded'
+      ) {
         throw new BadRequestException(
           `Battery with ID ${batteryId} is not in a state to start charging either because it is already charging, currently active in a drone, or has been discarded`,
         );
@@ -331,27 +337,47 @@ export class BatteryService {
         );
       }
 
-      // 2. Validate times
+      // 3. Compute charging hours (fractional hours)
       const { charge_start_time, charge_end_time } = dto;
-      if (charge_end_time <= charge_start_time) {
+
+      // Parse into Date objects
+      const startDate = new Date(charge_start_time);
+      const endDate = new Date(charge_end_time);
+
+      // Validate that they parsed correctly
+      if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+        throw new BadRequestException(
+          'Invalid date format for charge_start_time or charge_end_time',
+        );
+      }
+
+      // Ensure end is after start
+      if (endDate.getTime() <= startDate.getTime()) {
         throw new BadRequestException(
           'charge_end_time must be after charge_start_time',
         );
       }
 
-      // 3. Compute charging hours (fractional hours)
-      const msDiff = charge_end_time.getTime() - charge_start_time.getTime();
-      const charging_hours = msDiff / (1000 * 60 * 60);
+      // Compute the difference in milliseconds, then convert to hours
+      const msDiff = endDate.getTime() - startDate.getTime();
+      const charging_hours = msDiff / (1000 * 60 * 60); // ms → s → min → hours
 
-      // 4. Build the new history record
+      
       const newHistory = {
-        ...dto,
-        charging_hours,
+        charge_start_time: startDate,
+        charge_end_time: endDate,
+        charging_hours, // computed field
+        cell_voltage: dto.cell_voltage,
+        maxVdiff: dto.maxVdiff,
+        voltage_before_charge: dto.voltage_before_charge,
+        voltage_after_charge: dto.voltage_after_charge,
+        remark: dto.remark,
+        monitor_by: dto.monitor_by,
       };
 
-      // 5. Push into history array
+      // 5. Ensure the history array exists, then push
+      battery.history = battery.history ?? [];
       battery.history.push(newHistory);
-
       // 6. Update current_voltage to the latest voltage_after_charge
       battery.current_voltage = dto.voltage_after_charge;
 
@@ -364,7 +390,10 @@ export class BatteryService {
       // 8. updated the cycle count by incrementing it by 1
       battery.cycle_count = (battery.cycle_count || 0) + 1;
 
-      // 9. Save and return
+      // 9. update the charging status to charged
+      battery.charged_status = 'charged';
+
+      // 10. Save and return
       const updated = await battery.save();
       if (!updated) {
         throw new InternalServerErrorException(
@@ -395,42 +424,54 @@ export class BatteryService {
   }
 
   async getBatteryById(batteryId: string) {
-   try {
-     const battery = await this.batteryModel.findOne({ battery_id: batteryId });
-     if (!battery) {
-       throw new NotFoundException(`Battery with ID ${batteryId} not found`);
-     }
-     return {
-       status: 'success',
-       message: `Battery with ID ${batteryId} found`,
-       data: battery,
-     }
-   } catch (error) {
-     console.error(`Error fetching battery with ID ${batteryId}:`, error);
-     const errMsg = error.response?.message || error.message || 'Unknown error';
-     const code = error.status || 500;
-     throwException(code, errMsg);
-    
-   }
-  }
-
-  async dicardBattery(batteryId: string, req: Request) {
     try {
-      const battery = await this.batteryModel.findOne({ battery_id: batteryId });
+      const battery = await this.batteryModel.findOne({
+        battery_id: batteryId,
+      });
       if (!battery) {
         throw new NotFoundException(`Battery with ID ${batteryId} not found`);
       }
-      if (battery.charged_status === 'discarded') {
+      return {
+        status: 'success',
+        message: `Battery with ID ${batteryId} found`,
+        data: battery,
+      };
+    } catch (error) {
+      console.error(`Error fetching battery with ID ${batteryId}:`, error);
+      const errMsg =
+        error.response?.message || error.message || 'Unknown error';
+      const code = error.status || 500;
+      throwException(code, errMsg);
+    }
+  }
+
+  async dicardBattery(batteryId: string) {
+    try {
+      const battery = await this.batteryModel.findOne({
+        battery_id: batteryId,
+      });
+      if (!battery) {
+        throw new NotFoundException(`Battery with ID ${batteryId} not found`);
+      }
+      if (battery.charged_status === 'dicarded') {
         throw new BadRequestException(
           `Battery with ID ${batteryId} is already discarded`,
-        );    }
+        );
+      }
+      if(battery.charged_status === 'charging' || battery.charged_status === 'active') {
+        throw new BadRequestException(
+          `Battery with ID ${batteryId} is currently charging or active in a drone and cannot be discarded`,
+        );
+      }
+      // Update the battery status to discarded
+      battery.charged_status = 'dicarded';
       const updatedBattery = await battery.save();
       if (!updatedBattery) {
         throw new InternalServerErrorException(
           `Failed to discard battery with ID ${batteryId}`,
         );
       }
-      return {    
+      return {
         status: 'success',
         message: `Battery with ID ${batteryId} has been discarded`,
         data: {
@@ -439,11 +480,11 @@ export class BatteryService {
         },
       };
     } catch (error) {
-      console.error(`Error discarding battery with ID ${batteryId}:`, error);   
+      console.error(`Error discarding battery with ID ${batteryId}:`, error);
       const errMsg =
         error.response?.message || error.message || 'Unknown error';
       const code = error.status || 500;
-      throwException(code, errMsg); 
+      throwException(code, errMsg);
     }
   }
 }

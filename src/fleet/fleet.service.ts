@@ -107,19 +107,23 @@ export class FleetService {
   }
 
   // This method filters flights based on the provided query parameters.
-findMatchingDrones(query, droneArray) {
-  return droneArray.filter((drone) => {
-    if (query.$or) {
-      // Return true if any of the $or conditions match
-      return query.$or.some(condition =>
-        Object.entries(condition).every(([key, value]) => drone[key] === value)
-      );
-    }
+  findMatchingDrones(query, droneArray) {
+    return droneArray.filter((drone) => {
+      if (query.$or) {
+        // Return true if any of the $or conditions match
+        return query.$or.some((condition) =>
+          Object.entries(condition).every(
+            ([key, value]) => drone[key] === value,
+          ),
+        );
+      }
 
-    // Fallback: match all key-value pairs in query
-    return Object.entries(query).every(([key, value]) => drone[key] === value);
-  });
-}
+      // Fallback: match all key-value pairs in query
+      return Object.entries(query).every(
+        ([key, value]) => drone[key] === value,
+      );
+    });
+  }
 
   // This method fetches flight history for a specific drone ID.
   async flightHistoryOfDrone(req: Request, id: string) {
@@ -179,7 +183,7 @@ findMatchingDrones(query, droneArray) {
       console.log('Flight Data:', flightData);
       const query = {
         // This query filters flight based on the provided parameters.
-        $or: [{ "start_location": id }, { "end_location": id }],
+        $or: [{ start_location: id }, { end_location: id }],
       };
 
       const flight = this.findMatchingDrones(query, flightData); // Filter flight based on the query
@@ -807,7 +811,7 @@ findMatchingDrones(query, droneArray) {
           receiverDetails: {
             email: 'dnyaneshwar.suryavanshi@techeagle.in',
             address: {
-              city: flight.order_destination_location,
+              city: flight.end_location,
               state: 'Destination State',
               addressLine: 'Receiver address',
               pincode: '654321',
@@ -819,7 +823,7 @@ findMatchingDrones(query, droneArray) {
           senderDetails: {
             email: 'dnyaneshwar.suryavanshi@techeagle.in',
             address: {
-              city: flight.hub_id,
+              city: flight.start_location,
               state: 'Hub State',
               addressLine: 'Sender address',
               pincode: '123456',
@@ -872,8 +876,9 @@ findMatchingDrones(query, droneArray) {
   }
 
   async shipmentsForUserLocation(req: Request) {
-    const user = req.user as { location?: string };
-    if (!user || !user.location) {
+    const user = req.user as { curLocation?: string };
+    console.log('USER', user);
+    if (!user || !user.curLocation) {
       throw new InternalServerErrorException(
         'User location is not available in the request object.',
       );
@@ -901,13 +906,56 @@ findMatchingDrones(query, droneArray) {
 
       const filtered = shipments.filter(
         (s: any) =>
-          s?.senderDetails?.address?.city &&
-          s.senderDetails.address.city === user.location,
+          s?.senderDetails?.address?.city === user.curLocation ||
+          s?.receiverDetails?.address?.city === user.curLocation,
       );
 
       return {
         status: 'success',
-        message: `Shipments for location ${user.location} fetched successfully`,
+        message: `Shipments for location ${user.curLocation} fetched successfully`,
+        data: filtered,
+      };
+    } catch (error) {
+      console.error('Error fetching shipments:', error);
+      const errMsg =
+        error.response?.message || error.message || 'Unknown error';
+      const code = error.status || 500;
+      throwException(code, errMsg);
+    }
+  }
+
+  async shipmentsForFlight(id: string, req: Request) {
+    const token = process.env.SHIPMENT_API_KEY;
+    if (!token)
+      throw new InternalServerErrorException('SHIPMENT_API_KEY missing');
+
+    try {
+      const resp = await fetch(
+        'https://lapp.techeagle.in/api/v1/user/shipment/get/',
+        { headers: { Authorization: token } },
+      );
+
+      if (!resp.ok) {
+        const txt = await resp.text();
+        throw new InternalServerErrorException(
+          `Shipment API error (${resp.status}): ${txt}`,
+        );
+      }
+
+      const data = await resp.json();
+      const shipments = Array.isArray(data?.data) ? data.data : [];
+      console.log('Fetched Shipments:', shipments[10]);
+
+      const filtered = shipments.filter(
+        (s: any) =>
+          Array.isArray(s.products) &&
+          s.products.some((p: any) => p?.SKU === id),
+      );
+
+      console.log('Filtered Shipments:', filtered);
+      return {
+        status: 'success',
+        message: `Shipments for flight ${id} fetched successfully`,
         data: filtered,
       };
     } catch (error) {

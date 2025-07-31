@@ -9,6 +9,7 @@ import {
   IsObject,
   IsISO8601,
   IsDefined,
+  IsDateString,
 } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 
@@ -21,21 +22,17 @@ export class CellVoltageDto {
   @IsNumber() v6: number;
 }
 
-
-
 export class FlightHistoryDto {
-    @IsArray() all_battery: string[];
-   @IsString() flightId: string;
-   @IsString() droneId: string;
-   //@IsString() installed_by?: string;
+  @IsArray() all_battery: string[];
+  @IsString() flightId: string;
+  @IsString() droneId: string;
+  //@IsString() installed_by?: string;
 }
 
-
-
 export class DisconnectBatteryDto {
-    @IsArray() @IsString({ each: true }) all_Battery: string[];
-    @IsObject() batteryVoltages: Record<string, number>;
-    @IsString() end_location: string;
+  @IsArray() @IsString({ each: true }) all_Battery: string[];
+  @IsObject() batteryVoltages: Record<string, number>;
+  @IsString() end_location: string;
 }
 
 export class CreateBatteryDto {
@@ -58,14 +55,15 @@ export class CreateBatteryDto {
 
 export class ChargeHistoryDto {
   @IsDefined()
-  @IsISO8601()
-  @Transform(({ value }) => new Date(value))
-  charge_start_time: Date;
-
+  @IsDateString()
+  charge_start_time: string;
   @IsDefined()
-  @IsISO8601()
-  @Transform(({ value }) => new Date(value))
-  charge_end_time: Date;
+  @IsDateString()
+  charge_end_time: string;
+
+  @IsOptional()
+  @IsNumber()
+  charging_hours?: number;
 
   @IsDefined()
   @IsObject()

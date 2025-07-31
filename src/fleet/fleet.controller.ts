@@ -105,7 +105,14 @@ export class FleetController {
   @Get('my-shipments')
 async list(@Req() req: Request) {
   const result = await this.fleetService.shipmentsForUserLocation(req);
-  return result
+  return result;
+}
+
+@UseGuards(JwtAuthGuard)
+  @Get('flight-shipments/:id')
+async shipmentForFlight(@Param('id') id: string,@Req() req: Request) {
+  const result = await this.fleetService.shipmentsForFlight(id, req);
+  return result;
 }
 
 
