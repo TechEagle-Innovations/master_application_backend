@@ -1,9 +1,10 @@
-import { Controller, Post, Get, Patch, Delete, Param, Body, Query } from '@nestjs/common';
+import { Controller, Post, Get, Patch, Delete, Param, Body, Query} from '@nestjs/common';
 import { MaintainanceService } from './maintainance.service';
 import { CreateMaintainanceDto } from './dto/create-maintainance.dto';
 import { ReportIssueDto } from './dto/report-issue.dto';
 import { FilterMaintainanceDto } from './dto/filter-maintainance.dto';
 import { UpdateMaintainanceDto } from './dto/update-maintainance.dto';
+import { CreateDroneImagesAIDto } from './dto/create-drone-images-ai.dto';
 
 @Controller('maintainance')
 export class MaintainanceController {
@@ -17,6 +18,16 @@ export class MaintainanceController {
   @Post('report-issue')
   reportIssue(@Body() dto: ReportIssueDto) {
     return this.maintainanceService.reportIssue(dto);
+  }
+
+  @Post('drone-images-ai')
+  async createDroneImagesAI(@Body() body: CreateDroneImagesAIDto) {
+    return this.maintainanceService.createDroneImagesAI(body);
+  }
+
+  @Get('drone-images-ai/:droneId')
+  async getDroneImagesAIByDroneId(@Param('droneId') droneId: string) {
+    return this.maintainanceService.getDroneImagesAIByDroneId(droneId);
   }
 
   @Get()

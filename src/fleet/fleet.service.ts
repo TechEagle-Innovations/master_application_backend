@@ -23,6 +23,7 @@ import {
   FlightRecordDocument,
 } from '../schema/flight-record.schema';
 import axios from 'axios';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class FleetService {
@@ -34,7 +35,7 @@ export class FleetService {
     @InjectModel(FlightRecord.name)
     private readonly flightModel: Model<FlightRecordDocument>,
     private readonly config: ConfigService,
-  ) { }
+  ) {}
 
   // This method fetches all flights from the Clear Sky API
   async fetchAllFlight() {
@@ -76,12 +77,12 @@ export class FleetService {
         const errorText = await response.text();
         console.error('API Error:', errorText);
         throw new InternalServerErrorException(
-          `Failed to fetch drones: ${response.statusText}`,
+          `Failed to fetch flight: ${response.statusText}`,
         );
       }
 
       const data = await response.json();
-      console.log('Fetched Drones:', data);
+      //console.log('Fetched Drones:', data);
       return data.data;
     } catch (err) {
       console.error('Error in fetchAllDrones:', err.message);
@@ -107,10 +108,23 @@ export class FleetService {
 
   // This method filters flights based on the provided query parameters.
   findMatchingDrones(query, droneArray) {
-    return droneArray.filter((droneArray) =>
-      Object.entries(query).every(([key, value]) => droneArray[key] === value),
-    );
+    return droneArray.filter((drone) => {
+      if (query.$or) {
+        // Return true if any of the $or conditions match
+        return query.$or.some((condition) =>
+          Object.entries(condition).every(
+            ([key, value]) => drone[key] === value,
+          ),
+        );
+      }
+
+      // Fallback: match all key-value pairs in query
+      return Object.entries(query).every(
+        ([key, value]) => drone[key] === value,
+      );
+    });
   }
+
   // This method fetches flight history for a specific drone ID.
   async flightHistoryOfDrone(req: Request, id: string) {
     try {
@@ -141,6 +155,48 @@ export class FleetService {
       return {
         status: 'success',
         message: `Flight history for drone ID ${id} fetched successfully`,
+        data: flight,
+      };
+    } catch (error) {
+      console.error('Error fetching flight history:', error);
+      const errMsg =
+        error.response?.message || error.message || 'Unknown error';
+      const code = error.status || 500;
+      throwException(code, errMsg);
+    }
+  }
+
+  // This method fetches flight history for a specific location ID.
+  async flightHistoryOfLocation(req: Request, id: string) {
+    try {
+      if (!id) {
+        throw new NotFoundException(
+          'Location ID is not provided in the request.',
+        );
+      }
+      const flightData = await this.fetchAllFlight();
+      if (!flightData || !Array.isArray(flightData)) {
+        throw new InternalServerErrorException(
+          'Failed to fetch flight data from Clear Sky.',
+        );
+      }
+      console.log('Flight Data:', flightData);
+      const query = {
+        // This query filters flight based on the provided parameters.
+        $or: [{ start_location: id }, { end_location: id }],
+      };
+
+      const flight = this.findMatchingDrones(query, flightData); // Filter flight based on the query
+
+      if (!flight || flight.length === 0) {
+        throw new BadGatewayException(
+          `No Flight history found for location ID ${id}.`,
+        );
+      }
+
+      return {
+        status: 'success',
+        message: `Flight history for location ID ${id} fetched successfully`,
         data: flight,
       };
     } catch (error) {
@@ -393,7 +449,7 @@ export class FleetService {
   //       throw new InternalServerErrorException(
   //         'Flight data not received after checklist completion',
   //       );
-  //     } 
+  //     }
 
   //     return {
   //       status: 'success',
@@ -411,13 +467,16 @@ export class FleetService {
   // }
 
   // This method is to mark the pre-flight checklist as done.
-  async completeChecklist(req: Request, token: string, updates: Record<number, any>) {
-    console.log("UPDATES", updates);
+  async completeChecklist(
+    req: Request,
+    token: string,
+    updates: Record<number, any>,
+  ) {
+    console.log('UPDATES', updates);
     const url = this.config.get<string>('CLEARSKY_CLIENT_SOCKET_URL');
     let socket: Socket;
 
     try {
-
       const allConfirmed = Object.values(updates).every(
         (item: any) => item.confirm === true,
       );
@@ -427,7 +486,6 @@ export class FleetService {
         );
       }
 
-
       socket = io(url, {
         auth: { token, page: 'monitor' },
         transports: ['websocket'],
@@ -436,15 +494,12 @@ export class FleetService {
       });
       await once(socket, 'connect');
 
-
       const flightData: any = await new Promise<any>((resolve, reject) => {
-
         const onPush = (payload: any) => {
           socket.off('server:setFlightData', onPush);
           resolve(payload?.flight ?? payload);
         };
         socket.on('server:setFlightData', onPush);
-
 
         socket
           .timeout(5000)
@@ -454,19 +509,15 @@ export class FleetService {
             resolve(ack?.flight ?? ack);
           });
 
-        setTimeout(
-          () => {
-            socket.off('server:setFlightData', onPush);
-            reject(
-              new InternalServerErrorException(
-                'Failed to receive flight data from Clear Sky',
-              ),
-            );
-          },
-          5000,
-        );
+        setTimeout(() => {
+          socket.off('server:setFlightData', onPush);
+          reject(
+            new InternalServerErrorException(
+              'Failed to receive flight data from Clear Sky',
+            ),
+          );
+        }, 5000);
       });
-
 
       console.log('Flight ID:', flightData._id);
       if (flightData.isPreFlightChecklistCompleted) {
@@ -479,7 +530,6 @@ export class FleetService {
           'This flight is already completed. You cannot mark the pre-flight checklist as done.',
         );
       }
-
 
       await new Promise<void>((resolve, reject) => {
         socket.emit('client:updatePreFlightChecklistItems', updates, () => {
@@ -502,7 +552,6 @@ export class FleetService {
       const preFlightImages = this.getImgArray(updates);
       console.log('USER', req.user);
       console.log('Drone ID', flightData?.drone_id);
-
 
       if (flightData) {
         const flightRecord = new this.flightModel({
@@ -529,14 +578,14 @@ export class FleetService {
       };
     } catch (error) {
       console.error('Checklist completion error:', error);
-      const errMsg = error.response?.message || error.message || 'Unknown error';
+      const errMsg =
+        error.response?.message || error.message || 'Unknown error';
       const code = error.status || 500;
       throwException(code, errMsg);
     } finally {
       if (socket?.connected) socket.disconnect();
     }
   }
-
 
   // This method fetches the post-flight checklist from the socket io of the clearsky
   async getPostflightChecklist(userJwt: string): Promise<{
@@ -600,14 +649,13 @@ export class FleetService {
     }
   }
 
-
   // This method marks the post-flight checklist as done with the updates provided in body.
   async completePostflightChecklist(
     req: Request,
     userJwt: string,
     updates: Record<number, any>,
   ): Promise<{ status: string; message: string }> {
-    console.log("POST FLIGHT DATA", updates, userJwt)
+    console.log('POST FLIGHT DATA', updates, userJwt);
     const updObj = (updates as any).updates ?? updates;
 
     const url = this.config.get<string>('CLEARSKY_CLIENT_SOCKET_URL');
@@ -619,13 +667,14 @@ export class FleetService {
     });
 
     try {
-
       await Promise.race([
         once<void>(socket, 'connect'),
         once(socket, 'connect_error').then(([err]) => {
           if (err.message.includes('Unauthorized'))
             throw new UnauthorizedException('Invalid token');
-          throw new InternalServerErrorException(`Connection error: ${err.message}`);
+          throw new InternalServerErrorException(
+            `Connection error: ${err.message}`,
+          );
         }),
         new Promise((_, reject) =>
           setTimeout(
@@ -655,17 +704,14 @@ export class FleetService {
             resolve(ack?.flight ?? ack);
           });
 
-        setTimeout(
-          () => {
-            socket.off('server:setFlightData', onPush);
-            reject(
-              new InternalServerErrorException(
-                'Failed to receive flight data from Clear Sky',
-              ),
-            );
-          },
-          5000,
-        );
+        setTimeout(() => {
+          socket.off('server:setFlightData', onPush);
+          reject(
+            new InternalServerErrorException(
+              'Failed to receive flight data from Clear Sky',
+            ),
+          );
+        }, 5000);
       });
       if (!flightData) {
         throw new InternalServerErrorException(
@@ -686,10 +732,8 @@ export class FleetService {
         );
       }
 
-
       socket.emit('client:updatePostFlightChecklistItems', updObj);
       socket.emit('client:updatePostFlightChecklistDone', {});
-
 
       const postFlightImages = this.getImgArray(updObj);
 
@@ -719,6 +763,207 @@ export class FleetService {
       throwException(code, errMsg);
     } finally {
       socket.disconnect();
+    }
+  }
+  // create a cron job for the below function for every hour
+
+  @Cron(CronExpression.EVERY_HOUR)
+  async syncPendingShipments() {
+    try {
+      const shipToken = process.env.SHIPMENT_API_KEY;
+      if (!shipToken) throw new Error('SHIPMENT_API_KEY missing');
+
+      const allShipmentsResp = await fetch(
+        'https://lapp.techeagle.in/api/v1/user/shipment/get/',
+        { headers: { Authorization: shipToken } },
+      );
+      const allShipments = (await allShipmentsResp.json()).data || [];
+      const existingSkus = new Set(
+        allShipments
+          .flatMap((s: any) => s.products || [])
+          .map((p: any) => p.SKU),
+      );
+
+      /** 2️⃣  fetch flights from ClearSky */
+      const flights = await this.fetchAllFlight();
+      const pending = flights.filter(
+        (f) =>
+          !f.isCompleted &&
+          !f.isPreFlightChecklistCompleted &&
+          dayjs(f.date_created).isAfter(dayjs().subtract(10, 'day')),
+      );
+
+      console.log(`Found ${pending.length} pending flights to sync shipments`);
+      //console.log("pending flights", pending);
+
+      for (const flight of pending) {
+        if (existingSkus.has(flight._id)) {
+          // duplicate shipment already exists
+          console.log(`Skipping flight ${flight._id} - already exists`);
+          continue;
+        }
+
+        const shipmentBody = {
+          governmentId: 'NA',
+          invoiceNumber: `INV-${flight.order_no || flight.localFlightId}`,
+          invoiceDate: dayjs(flight.date_created).format('YYYY-MM-DD HH:mm:ss'),
+          isScheduledConfirmed: true,
+          receiverDetails: {
+            email: 'dnyaneshwar.suryavanshi@techeagle.in',
+            address: {
+              city: flight.end_location,
+              state: 'Destination State',
+              addressLine: 'Receiver address',
+              pincode: '654321',
+            },
+            pincode: '654321',
+            phoneNo: '8888888888',
+            altPhoneNo: '5656565656',
+          },
+          senderDetails: {
+            email: 'dnyaneshwar.suryavanshi@techeagle.in',
+            address: {
+              city: flight.start_location,
+              state: 'Hub State',
+              addressLine: 'Sender address',
+              pincode: '123456',
+            },
+            pincode: '123456',
+            phoneNo: '9999999999',
+            altPhoneNo: '9898989898',
+          },
+          paymentDetails: {
+            isPaymentDone: false,
+            paymentMode: 'NA',
+            paymentTransactionId: 'NA',
+            amount: 0,
+          },
+          shipmentDetails: {
+            dimensions: { length: 50, width: 50, height: 50 },
+            weight: 500,
+            vWeight: 500,
+            eWayBillNo: 'NA',
+          },
+          products: [
+            {
+              SKU: flight._id,
+              price: 0,
+              quantity: 1,
+              productId: flight.order_id || 'ProductId',
+            },
+          ],
+        };
+
+        await fetch('https://lapp.techeagle.in/api/v1/user/shipment/new', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: shipToken,
+          },
+          body: JSON.stringify(shipmentBody),
+        });
+      }
+
+      return { status: 'success', message: `Synced ${pending.length} flights` };
+    } catch (error: any) {
+      console.error('Error syncing shipments:', error.message);
+
+      const errMsg =
+        error.response?.message || error.message || 'Unknown error';
+      const code = error.status || 500;
+      throwException(code, errMsg);
+    }
+  }
+
+  async shipmentsForUserLocation(req: Request) {
+    const user = req.user as { curLocation?: string };
+    console.log('USER', user);
+    if (!user || !user.curLocation) {
+      throw new InternalServerErrorException(
+        'User location is not available in the request object.',
+      );
+    }
+
+    const token = process.env.SHIPMENT_API_KEY;
+    if (!token)
+      throw new InternalServerErrorException('SHIPMENT_API_KEY missing');
+
+    try {
+      const resp = await fetch(
+        'https://lapp.techeagle.in/api/v1/user/shipment/get/',
+        { headers: { Authorization: token } },
+      );
+
+      if (!resp.ok) {
+        const txt = await resp.text();
+        throw new InternalServerErrorException(
+          `Shipment API error (${resp.status}): ${txt}`,
+        );
+      }
+
+      const data = await resp.json();
+      const shipments = Array.isArray(data?.data) ? data.data : [];
+
+      const filtered = shipments.filter(
+        (s: any) =>
+          s?.senderDetails?.address?.city === user.curLocation ||
+          s?.receiverDetails?.address?.city === user.curLocation,
+      );
+
+      return {
+        status: 'success',
+        message: `Shipments for location ${user.curLocation} fetched successfully`,
+        data: filtered,
+      };
+    } catch (error) {
+      console.error('Error fetching shipments:', error);
+      const errMsg =
+        error.response?.message || error.message || 'Unknown error';
+      const code = error.status || 500;
+      throwException(code, errMsg);
+    }
+  }
+
+  async shipmentsForFlight(id: string, req: Request) {
+    const token = process.env.SHIPMENT_API_KEY;
+    if (!token)
+      throw new InternalServerErrorException('SHIPMENT_API_KEY missing');
+
+    try {
+      const resp = await fetch(
+        'https://lapp.techeagle.in/api/v1/user/shipment/get/',
+        { headers: { Authorization: token } },
+      );
+
+      if (!resp.ok) {
+        const txt = await resp.text();
+        throw new InternalServerErrorException(
+          `Shipment API error (${resp.status}): ${txt}`,
+        );
+      }
+
+      const data = await resp.json();
+      const shipments = Array.isArray(data?.data) ? data.data : [];
+      console.log('Fetched Shipments:', shipments[10]);
+
+      const filtered = shipments.filter(
+        (s: any) =>
+          Array.isArray(s.products) &&
+          s.products.some((p: any) => p?.SKU === id),
+      );
+
+      console.log('Filtered Shipments:', filtered);
+      return {
+        status: 'success',
+        message: `Shipments for flight ${id} fetched successfully`,
+        data: filtered,
+      };
+    } catch (error) {
+      console.error('Error fetching shipments:', error);
+      const errMsg =
+        error.response?.message || error.message || 'Unknown error';
+      const code = error.status || 500;
+      throwException(code, errMsg);
     }
   }
 }

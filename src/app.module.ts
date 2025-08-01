@@ -33,6 +33,7 @@ class ClearSkyCronService implements OnModuleInit {
     );
   }
 }
+import { NotificationModule } from './notification/notification.module';
 
 @Module({
   imports: [
@@ -66,6 +67,7 @@ class ClearSkyCronService implements OnModuleInit {
     DroneModule,
     FleetModule,
     MaintainanceModule,
+    NotificationModule,
   ],
   controllers: [AppController],
   providers: [AppService, ClearSkyCronService],

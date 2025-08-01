@@ -1,17 +1,36 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Param,
+  Body,
+  UseGuards,
+  Req,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
 import { BatteryService } from './battery.service';
 import { Battery } from '../schema/battery.schema';
 import { JwtAuthGuard } from 'src/user/guards/jwt-auth.guard';
+import {
+  ChargeHistoryDto,
+  CreateBatteryDto,
+  DisconnectBatteryDto,
+  FlightHistoryDto,
+} from './dto/create-battery.dto';
+import { Request } from 'express';
 
 @Controller('batteries')
 export class BatteryController {
   constructor(private readonly batteryService: BatteryService) {}
 
   /** Create a battery */
-  @UseGuards(JwtAuthGuard) 
+  @UseGuards(JwtAuthGuard)
   @Post()
-  create(@Body() data: Partial<Battery>): Promise<Battery> {
-    return this.batteryService.create(data);
+  create(@Body() data: CreateBatteryDto, @Req() req: Request) {
+    return this.batteryService.create(data, req);
   }
 
   /** Get all batteries */
@@ -21,52 +40,55 @@ export class BatteryController {
     return this.batteryService.findAll();
   }
 
-  /** Get one battery by ID */
+  /** Get one battery by location ID */
   @UseGuards(JwtAuthGuard)
   @Get(':id')
   findOne(@Param('id') id: string): Promise<Battery[]> {
     return this.batteryService.findOne(id);
   }
 
-  /** Update battery details */
+  // connect battery to the drone endpoint
   @UseGuards(JwtAuthGuard)
-  @Put(':id')
-  update(@Param('id') id: string, @Body() data: Partial<Battery>): Promise<Battery> {
-    return this.batteryService.update(id, data);
+  @Put('connect')
+  connect(@Body() body: FlightHistoryDto, @Req() req: Request) {
+    return this.batteryService.connect(body, req);
+  }
+  @UseGuards(JwtAuthGuard)
+  @Put('disconnect')
+  disconnect(@Body() body: DisconnectBatteryDto, @Req() req: Request) {
+    return this.batteryService.disconnect(body, req);
   }
 
-  /** Delete a battery */
   @UseGuards(JwtAuthGuard)
-  @Delete(':id')
-  remove(@Param('id') id: string): Promise<void> {
-    return this.batteryService.remove(id);
+  @Post('charge-history/:battery_id')
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async addChargeHistory(
+    @Param('battery_id') batteryId: string,
+    @Body() dto: ChargeHistoryDto,
+  ) {
+    return this.batteryService.addChargeHistory(batteryId, dto);
   }
 
-  /** Connect battery to a flight and drone */
   @UseGuards(JwtAuthGuard)
-  @Post(':id/connect')
-  connect(
-    @Param('id') id: string,
-    @Body('flightId') flightId: string,
-    @Body('droneId') droneId: string,
-  ): Promise<Battery> {
-    return this.batteryService.connect(id, flightId, droneId);
+  @Put('start-charge/:battery_id')
+  async startCharging(
+    @Param('battery_id') batteryId: string,
+  ) {
+    return this.batteryService.startCharging(batteryId);
   }
 
-  /** Disconnect battery: clears flight/drone and increments flight count */
   @UseGuards(JwtAuthGuard)
-  @Post(':id/disconnect')
-  disconnect(@Param('id') id: string): Promise<Battery> {
-    return this.batteryService.disconnect(id);
+  @Get('battery/:id')
+  findOneById(@Param('id') id: string) {
+    return this.batteryService.getBatteryById(id);
   }
 
-  /** Update charging percentage */
-  @UseGuards(JwtAuthGuard)
-  @Put(':id/charging')
-  updateCharging(
-    @Param('id') id: string,
-    @Body('percentage') percentage: number,
-  ): Promise<Battery> {
-    return this.batteryService.updateCharging(id, percentage);
+    @UseGuards(JwtAuthGuard)
+  @Put('discard/:battery_id')
+  async discard(
+    @Param('battery_id') batteryId: string,
+  ) {
+    return this.batteryService.dicardBattery(batteryId);
   }
+
 }

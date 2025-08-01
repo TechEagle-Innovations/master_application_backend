@@ -16,5 +16,6 @@ import { FlightRecord, FlightRecordSchema } from '../schema/flight-record.schema
   ],
   controllers: [FleetController],
   providers: [FleetService, JwtAuthGuard],
+  exports: [FleetService]
 })
 export class FleetModule {}

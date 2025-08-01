@@ -9,6 +9,7 @@ import { OtpGenerator } from 'src/emailService/generateOtp';
 import { EmailTemplate } from 'src/emailService/emailTemplate';
 import axios from 'axios';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { HubLocation } from 'src/schema/location/hublocation.schema';
 
 // NOTE: Make sure to install @nestjs/schedule and add ScheduleModule.forRoot() to your AppModule imports for cron jobs to work.
 // import { ScheduleModule } from '@nestjs/schedule';
@@ -75,7 +76,8 @@ export class AuthService {
       userName: user.userName,
       permission: user.permission,
       designation: user.designation,
-      location: user.location
+      location: user.hub_location,
+      curLocation: user.location
     };
 
     // Generate access token and refresh token
@@ -94,7 +96,8 @@ export class AuthService {
         email: user.useremail,
         userName: user.userName,
         permission: user.permission,
-        location: user.location,
+        location: user.hub_location,
+        curLocation: user.location,
         designation: user.designation
       }
     };
