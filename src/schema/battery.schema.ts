@@ -37,7 +37,7 @@ export class Battery {
   @Prop({ required: true, unique: true }) battery_id: string;
   @Prop({ required: true, enum: ['lipo', 'li-ion'] }) battery_type: string;
   @Prop() image: string;
-  @Prop({ enum: ['charged', 'discharged', 'charging', 'active', 'dicarded'] })
+  @Prop({ enum: ['charged', 'discharged', 'charging', 'active', 'discarded'] })
   charged_status: string;
 
   @Prop() locationId: string;
@@ -45,6 +45,7 @@ export class Battery {
   @Prop() current_flight_id: string;
   @Prop() created_by: string;
   @Prop({default: 0}) cycle_count: number;
+  @Prop({ default: false }) isDiscarded: boolean;
 
   @Prop({ type: [ChargeHistory] }) history: ChargeHistory[];
   @Prop({ type: [FlightHistory] }) flight_history: FlightHistory[];

@@ -453,7 +453,7 @@ export class BatteryService {
       if (!battery) {
         throw new NotFoundException(`Battery with ID ${batteryId} not found`);
       }
-      if (battery.charged_status === 'dicarded') {
+      if (battery.charged_status === 'discarded') {
         throw new BadRequestException(
           `Battery with ID ${batteryId} is already discarded`,
         );
@@ -464,7 +464,8 @@ export class BatteryService {
         );
       }
       // Update the battery status to discarded
-      battery.charged_status = 'dicarded';
+      battery.charged_status = 'discarded';
+      battery.isDiscarded = true; 
       const updatedBattery = await battery.save();
       if (!updatedBattery) {
         throw new InternalServerErrorException(

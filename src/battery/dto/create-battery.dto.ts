@@ -23,7 +23,7 @@ export class CellVoltageDto {
 }
 
 export class FlightHistoryDto {
-  @IsArray() all_battery: string[];
+  @IsArray() @IsString({ each: true }) all_battery: string[];
   @IsString() flightId: string;
   @IsString() droneId: string;
   //@IsString() installed_by?: string;
