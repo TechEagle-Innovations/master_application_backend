@@ -91,6 +91,9 @@ export class DroneMaintenance {
   @Prop()
   userComments: string;
 
+  @Prop({ type: Object, default: {} })
+  images:{};
+
   @Prop({ default: false })
   isResolved: boolean;
 }

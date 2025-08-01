@@ -14,6 +14,7 @@ export class NotificationService {
 
   async registerToken(userId: string, pushToken: string): Promise<void> {
     if (!pushToken || !userId) throw new BadRequestException('Missing token or userId');
+    console.log("registerToken", pushToken, userId);
     await this.notificationTokenModel.findOneAndUpdate(
       { userId },
       { userId, push_token: pushToken },
