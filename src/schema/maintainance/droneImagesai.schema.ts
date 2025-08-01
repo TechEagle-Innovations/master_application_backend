@@ -12,7 +12,7 @@ export class ImagePart {
   @Prop({
     type: String,
     required: true,
-    enum: ["crack", "dent", "paint-off", "scratch", "missing-head"],
+    enum: ["crack", "dent", "paint-off", "scratch", "missing-head", "all-good"],
   })
   defectClassName: string;
 }
