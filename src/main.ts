@@ -29,7 +29,7 @@ async function bootstrap() {
 
   try {
     const token = await refresh({ useremail: email, password });
-    tokenService.setToken(token);
+    await tokenService.setToken(token);
     console.log('Token initialized before app start');
   } catch (err) {
     console.error('Failed to fetch token at startup:', err.message);

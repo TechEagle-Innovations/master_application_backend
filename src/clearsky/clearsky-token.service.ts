@@ -6,7 +6,9 @@ export class ClearSkyTokenService {
   private token: string | null = null;
 
   setToken(token: string) {
+   
     this.token = token;
+     console.log('getToken called; token is:', this.token);
   }
 
   getToken(): string {
