@@ -8,8 +8,11 @@ import {
 import { GetAllDroneDto } from './dto/get-drone.dto';
 import { throwException } from 'src/utility/throwError';
 import { Request } from 'express';
+import { ClearSkyTokenService } from 'src/clearsky/clearsky-Token.service';
 @Injectable()
 export class DroneService {
+  constructor(private readonly tokenService: ClearSkyTokenService) {}
+
   private droneCache: Record<string, { data: any[]; cachedAt: number }> = {};
   private allDrones: { data: any[]; cachedAt: number } = {
     data: [],
@@ -28,7 +31,8 @@ export class DroneService {
   // This method fetches all drones from the Clear Sky API. It uses the API key stored in the environment variable CLEAR_SKY_API_KEY.
   async getAllDrones() {
     try {
-      let token = process.env.CLEAR_SKY_API_KEY;
+      let token = this.tokenService.getToken();
+      console.log('Token:', token);
       if (!token) {
         throw new InternalServerErrorException(
           'API key for Clear Sky is not set in environment variables.',

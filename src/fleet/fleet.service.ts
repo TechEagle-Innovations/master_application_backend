@@ -24,6 +24,7 @@ import {
 } from '../schema/flight-record.schema';
 import axios from 'axios';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { ClearSkyTokenService } from 'src/clearsky/clearsky-Token.service';
 
 @Injectable()
 export class FleetService {
@@ -31,10 +32,12 @@ export class FleetService {
   private droneSocket: Socket | null = null;
   private readonly CLEARSKY_BASE_URL = process.env.CLEAR_SKY_BACKEND_URL;
 
+
   constructor(
     @InjectModel(FlightRecord.name)
     private readonly flightModel: Model<FlightRecordDocument>,
     private readonly config: ConfigService,
+    private readonly tokenService: ClearSkyTokenService
   ) {}
 
   // This method fetches all flights from the Clear Sky API
