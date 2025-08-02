@@ -2,8 +2,9 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { ConfigService } from '@nestjs/config';
 
-import { ClearSkyTokenService } from './clearsky-token.service'; // ← THIS IS CRUCIAL
+
 import refresh from 'src/utility/update-clearsky-token';
+import { ClearSkyTokenService } from './clearsky-token.service';
 
 
 @Injectable()
