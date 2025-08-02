@@ -5,6 +5,8 @@ import { ReportIssueDto } from './dto/report-issue.dto';
 import { FilterMaintainanceDto } from './dto/filter-maintainance.dto';
 import { UpdateMaintainanceDto } from './dto/update-maintainance.dto';
 import { CreateDroneImagesAIDto } from './dto/create-drone-images-ai.dto';
+import { ResolveMaintenanceDto } from './dto/resolve-issue.dto';
+import { DroneMaintenance } from 'src/schema/maintainance/droneMaintenance.schema';
 
 @Controller('maintainance')
 export class MaintainanceController {
@@ -48,5 +50,12 @@ export class MaintainanceController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.maintainanceService.remove(id);
+  }
+  @Patch(':id')
+  async updateMaintenance(
+    @Param('id') id: string,
+    @Body() dto: ResolveMaintenanceDto,
+  ): Promise<DroneMaintenance> {
+    return this.maintainanceService.update(id, dto);
   }
 } 

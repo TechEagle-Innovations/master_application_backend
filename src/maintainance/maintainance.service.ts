@@ -22,6 +22,7 @@ import { DroneService } from 'src/drone/drone.service';
 import { FleetService } from 'src/fleet/fleet.service';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import dayjs from 'dayjs';
+import { ResolveMaintenanceDto } from './dto/resolve-issue.dto';
 
 @Injectable()
 export class MaintainanceService {
@@ -37,9 +38,7 @@ constructor(
 ) {}
 
   async createRegular(dto: CreateMaintainanceDto) {
-    if (!isValidObjectId(dto.droneId)) {
-      throw new BadRequestException('Invalid droneId');
-    }
+
     const conflict = await this.maintainanceModel.findOne({
       droneId: dto.droneId,
       maintenanceType: 'REGULAR',
@@ -69,9 +68,9 @@ constructor(
     // if (!isValidObjectId(dto.droneId)) {
     //   throw new BadRequestException('Invalid droneId');
     // }
-    if (!isValidObjectId(dto.reportedBy)) {
-      throw new BadRequestException('Invalid reportedBy userId');
-    }
+    // if (!isValidObjectId(dto.reportedBy)) {
+    //   throw new BadRequestException('Invalid reportedBy userId');
+    // }
     try {
       const created = new this.maintainanceModel({
         ...dto,
@@ -96,12 +95,7 @@ constructor(
         'imageParts is required and must be an object',
       );
     }
-    const exists = await this.droneImagesAIModel.findOne({
-      droneId: body.droneId,
-    });
-    if (exists) {
-      throw new BadRequestException('Record for this droneId already exists');
-    }
+
     try {
       const created = new this.droneImagesAIModel(body);
       return await created.save();
@@ -117,7 +111,7 @@ constructor(
     if (!droneId || typeof droneId !== 'string') {
       throw new BadRequestException('droneId is required and must be a string');
     }
-    const record = await this.droneImagesAIModel.findOne({ droneId });
+    const record = await this.droneImagesAIModel.find({ droneId });
     if (!record) throw new NotFoundException('DroneImagesAI record not found');
     return record;
   }
@@ -125,8 +119,6 @@ constructor(
   async findAll(filter: FilterMaintainanceDto) {
     const query: FilterQuery<DroneMaintenanceDocument> = {};
     if (filter.droneId) {
-      if (!isValidObjectId(filter.droneId))
-        throw new BadRequestException('Invalid droneId');
       query.droneId = filter.droneId;
     }
     if (filter.maintenanceType) query.maintenanceType = filter.maintenanceType;
@@ -232,4 +224,22 @@ constructor(
       );
     }
   }
+    async resolve(
+    id: string,
+    dto: ResolveMaintenanceDto,
+  ): Promise<DroneMaintenance> {
+    const maintenance = await this.maintainanceModel.findById(id);
+    if (!maintenance) {
+      throw new NotFoundException(`Maintenance record ${id} not found`);
+    }
+
+    // Apply the updates
+    maintenance.status = dto.status;
+    maintenance.isResolved = dto.isResolved;
+    // If client provided updatedAt, use it; otherwise stamp now
+    maintenance.updatedAt = dto.updatedAt ?? new Date();
+
+    return maintenance.save();
+  }
+
 }
