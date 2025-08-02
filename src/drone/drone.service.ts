@@ -8,7 +8,7 @@ import {
 import { GetAllDroneDto } from './dto/get-drone.dto';
 import { throwException } from 'src/utility/throwError';
 import { Request } from 'express';
-import { ClearSkyTokenService } from 'src/clearsky/clearsky-Token.service';
+import { ClearSkyTokenService } from 'src/clearsky/clearsky-token.service';
 @Injectable()
 export class DroneService {
   constructor(private readonly tokenService: ClearSkyTokenService) {}

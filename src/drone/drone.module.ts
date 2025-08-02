@@ -4,7 +4,7 @@ import { DroneController } from './drone.controller';
 import { UserModule } from 'src/user/user.module';
 import { JwtAuthGuard } from 'src/user/guards/jwt-auth.guard';
 import { ClearSkyModule } from 'src/clearsky/clearsky.module';
-import { ClearSkyTokenService } from 'src/clearsky/clearsky-Token.service';
+import { ClearSkyTokenService } from 'src/clearsky/clearsky-token.service';
 
 
 

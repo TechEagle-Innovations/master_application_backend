@@ -8,7 +8,7 @@ import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { FlightRecord, FlightRecordSchema } from '../schema/flight-record.schema';
 import { ClearSkyModule } from 'src/clearsky/clearsky.module';
-import { ClearSkyTokenService } from 'src/clearsky/clearsky-Token.service';
+import { ClearSkyTokenService } from 'src/clearsky/clearsky-token.service';
 
 @Module({
   imports: [

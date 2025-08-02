@@ -3,7 +3,7 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as dotenv from 'dotenv';
-import { ClearSkyTokenService } from './clearsky/clearsky-Token.service';
+import { ClearSkyTokenService } from './clearsky/clearsky-token.service';
 import { ConfigService } from '@nestjs/config';
 import refresh from './utility/update-clearsky-token';
 dotenv.config(); 

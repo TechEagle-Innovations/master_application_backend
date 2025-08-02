@@ -24,7 +24,7 @@ import {
 } from '../schema/flight-record.schema';
 import axios from 'axios';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { ClearSkyTokenService } from 'src/clearsky/clearsky-Token.service';
+import { ClearSkyTokenService } from 'src/clearsky/clearsky-token.service';
 
 @Injectable()
 export class FleetService {
