@@ -18,7 +18,7 @@ import { ClearSkyTokenService } from 'src/clearsky/clearsky-token.service';
     ClearSkyModule
   ],
   controllers: [FleetController],
-  providers: [FleetService, JwtAuthGuard,ClearSkyTokenService],
+  providers: [FleetService, JwtAuthGuard],
   exports: [FleetService]
 })
 export class FleetModule {}

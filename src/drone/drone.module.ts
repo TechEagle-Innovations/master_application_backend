@@ -11,7 +11,7 @@ import { ClearSkyTokenService } from 'src/clearsky/clearsky-token.service';
 @Module({
   imports: [UserModule, ClearSkyModule],
   controllers: [DroneController],
-  providers: [DroneService, JwtAuthGuard, ClearSkyTokenService ],
+  providers: [DroneService, JwtAuthGuard ],
   exports: [DroneService]
 })
 export class DroneModule {}

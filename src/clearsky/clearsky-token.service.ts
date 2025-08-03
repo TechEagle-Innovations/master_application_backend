@@ -1,10 +1,10 @@
 
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 
+
 @Injectable()
 export class ClearSkyTokenService {
-  private token: string | null = null;
-
+  public token: string | null = null;
   setToken(token: string) {
    
     this.token = token;

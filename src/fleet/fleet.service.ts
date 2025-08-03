@@ -43,7 +43,7 @@ export class FleetService {
   // This method fetches all flights from the Clear Sky API
   async fetchAllFlight() {
     try {
-      const token = process.env.CLEAR_SKY_API_KEY;
+      const token = this.tokenService.getToken();
       if (!token) {
         throw new InternalServerErrorException(
           'CLEAR_SKY_API_KEY is not set in .env',

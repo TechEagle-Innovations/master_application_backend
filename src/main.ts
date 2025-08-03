@@ -10,6 +10,7 @@ dotenv.config();
 
 
 async function bootstrap() {
+  //console.log('Starting Master Application Backend...');
   const app = await NestFactory.create(AppModule);
   app.enableCors({origin:"*"});
   app.useGlobalPipes(
@@ -21,19 +22,19 @@ async function bootstrap() {
 );
 
 
-  const configService = app.get(ConfigService);
-  const tokenService = app.get(ClearSkyTokenService);
+  // const configService = app.get(ConfigService);
+  // const tokenService = app.get(ClearSkyTokenService);
 
-  const email = configService.get<string>('CLEARSKY_USER');
-  const password = configService.get<string>('CLEARSKY_PASS');
+  // const email = configService.get<string>('CLEARSKY_USER');
+  // const password = configService.get<string>('CLEARSKY_PASS');
 
-  try {
-    const token = await refresh({ useremail: email, password });
-    await tokenService.setToken(token);
-    console.log('Token initialized before app start');
-  } catch (err) {
-    console.error('Failed to fetch token at startup:', err.message);
-  }
+  // try {
+  //   const token = await refresh({ useremail: email, password });
+  //   await tokenService.setToken(token);
+  //   console.log('Token initialized before app start');
+  // } catch (err) {
+  //   console.error('Failed to fetch token at startup:', err.message);
+  // }
 
   // Swagger configuration
   const config = new DocumentBuilder()
