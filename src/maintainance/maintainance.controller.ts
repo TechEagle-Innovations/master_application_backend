@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Patch, Delete, Param, Body, Query} from '@nestjs/common';
+import { Controller, Post, Get, Patch, Delete, Param, Body, Query, Req, UseGuards} from '@nestjs/common';
 import { MaintainanceService } from './maintainance.service';
 import { CreateMaintainanceDto } from './dto/create-maintainance.dto';
 import { ReportIssueDto } from './dto/report-issue.dto';
@@ -7,7 +7,10 @@ import { UpdateMaintainanceDto } from './dto/update-maintainance.dto';
 import { CreateDroneImagesAIDto } from './dto/create-drone-images-ai.dto';
 import { ResolveMaintenanceDto } from './dto/resolve-issue.dto';
 import { DroneMaintenance } from 'src/schema/maintainance/droneMaintenance.schema';
+import { Request } from 'express';
+import { JwtAuthGuard } from 'src/user/guards/jwt-auth.guard';
 
+@UseGuards(JwtAuthGuard)
 @Controller('maintainance')
 export class MaintainanceController {
   constructor(private readonly maintainanceService: MaintainanceService) {}
@@ -57,5 +60,10 @@ export class MaintainanceController {
     @Body() dto: ResolveMaintenanceDto,
   ): Promise<DroneMaintenance> {
     return this.maintainanceService.update(id, dto);
+  }
+
+  @Post("resolve/:id")
+  resolveMaintainance(@Param('id') id: string, @Body() body: ResolveMaintenanceDto, @Req() req: any){
+    return this.maintainanceService.resolveMaintenance(id ,body, req.user.sub);
   }
 } 

@@ -9,6 +9,7 @@ import { Model, FilterQuery, isValidObjectId, Types } from 'mongoose';
 import {
   DroneMaintenance,
   DroneMaintenanceDocument,
+  MaintenanceAction,
 } from '../schema/maintainance/droneMaintenance.schema';
 import { CreateMaintainanceDto } from './dto/create-maintainance.dto';
 import { ReportIssueDto } from './dto/report-issue.dto';
@@ -224,22 +225,107 @@ constructor(
       );
     }
   }
-    async resolve(
-    id: string,
-    dto: ResolveMaintenanceDto,
-  ): Promise<DroneMaintenance> {
-    const maintenance = await this.maintainanceModel.findById(id);
-    if (!maintenance) {
-      throw new NotFoundException(`Maintenance record ${id} not found`);
-    }
+  async resolveMaintenance(
+  id: string,
+  dto: ResolveMaintenanceDto,
+  userId: string,
+): Promise<DroneMaintenance> {
+  // Validate input
+  if (!id || !userId) {
+    throw new BadRequestException('Maintenance ID and user ID are required');
+  }
 
-    // Apply the updates
+  const maintenance = await this.maintainanceModel.findById(id);
+  if (!maintenance) {
+    throw new NotFoundException(`Maintenance record ${id} not found`);
+  }
+
+  // Validate maintenance can be resolved
+  if (maintenance.status === 'COMPLETED' || maintenance.status === 'CANCELLED') {
+    throw new BadRequestException('Maintenance is already in a final state');
+  }
+
+  try {
+    // Update basic resolution info
     maintenance.status = dto.status;
     maintenance.isResolved = dto.isResolved;
-    // If client provided updatedAt, use it; otherwise stamp now
-    maintenance.updatedAt = dto.updatedAt ?? new Date();
+    maintenance.resolvedAt = dto.resolvedAt || new Date();
+    maintenance.updatedAt = dto.updatedAt || new Date();
 
-    return maintenance.save();
+    // Add resolution action
+    // const resolutionAction: MaintenanceAction = {
+    //   action: `Maintenance ${dto.status.toLowerCase()}`,
+    //   performedBy: new Types.ObjectId(userId),
+    //   performedAt: new Date(),
+    //   notes: dto.resolutionNotes || `Maintenance ${dto.status.toLowerCase()} by ${userId}`,
+    // };
+    // maintenance.actionsTaken.push(resolutionAction);
+
+    // Add any additional actions
+    if (dto.actionsTaken?.length > 0) {
+      dto.actionsTaken.forEach(action => {
+        const newAction: MaintenanceAction = {
+          action: action.action,
+          performedBy: new Types.ObjectId(userId),
+          performedAt: action.performedAt || new Date(),
+          notes: action.notes || `Action performed by ${userId}`,
+        };
+        maintenance.actionsTaken.push(newAction);
+      });
+    }
+
+    // Update checklist items if provided
+    if (dto.checklistUpdates?.length > 0) {
+      dto.checklistUpdates.forEach(update => {
+        const item = maintenance.maintenanceChecklist.find(
+          (i: any) => i._id.toString() === update.itemId
+        );
+        if (item) {
+          item.checked = update.checked;
+          item.checkedAt = new Date();
+          item.checkedBy = new Types.ObjectId(update.checkedBy);
+          if (update.notes) {
+            (item as any).notes = update.notes;
+          }
+        }
+      });
+    }
+
+    // For regular maintenance, update scheduling if completed
+    if (maintenance.maintenanceType === 'REGULAR' && dto.status === 'COMPLETED') {
+      if (!dto.nextScheduledDate) {
+        throw new BadRequestException('Next scheduled date is required for regular maintenance completion');
+      }
+      if (!dto.maintenanceInterval) {
+        throw new BadRequestException('Maintenance interval is required for regular maintenance completion');
+      }
+      maintenance.nextScheduledDate = dto.nextScheduledDate;
+      maintenance.maintenanceInterval = dto.maintenanceInterval;
+    }
+
+    console.log("UNRESOLVEd", maintenance);
+    // For issue reports, ensure proper documentation
+    if (maintenance.maintenanceType === 'ISSUE_REPORTED' && dto.status === 'COMPLETED') {
+      // if (!dto.resolutionNotes) {
+      //   throw new BadRequestException('Resolution notes are required for issue reports');
+      // }
+      if (maintenance.actionsTaken.length == 0) {
+        throw new BadRequestException('At least one action taken is required for issue resolution');
+      }
+    }
+    console.log("RESOLVEd", maintenance);
+
+    return await maintenance.save();
+  } catch (error) {
+    console.log("RESOLVE ERROR", error);
+    if (error instanceof BadRequestException) {
+      throw error;
+    }
+    throw new InternalServerErrorException(
+      'Failed to resolve maintenance record',
+      error.message,
+    );
   }
+}
 
 }
