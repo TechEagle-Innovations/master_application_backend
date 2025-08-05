@@ -25,6 +25,7 @@ import {
 import axios from 'axios';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { ClearSkyTokenService } from 'src/clearsky/clearsky-token.service';
+import { DeliveryDetailsDto } from './dto/update-fleet.dto';
 
 @Injectable()
 export class FleetService {
@@ -32,12 +33,11 @@ export class FleetService {
   private droneSocket: Socket | null = null;
   private readonly CLEARSKY_BASE_URL = process.env.CLEAR_SKY_BACKEND_URL;
 
-
   constructor(
     @InjectModel(FlightRecord.name)
     private readonly flightModel: Model<FlightRecordDocument>,
     private readonly config: ConfigService,
-    private readonly tokenService: ClearSkyTokenService
+    private readonly tokenService: ClearSkyTokenService,
   ) {}
 
   // This method fetches all flights from the Clear Sky API
@@ -793,7 +793,7 @@ export class FleetService {
         (f) =>
           !f.isCompleted &&
           !f.isPreFlightChecklistCompleted &&
-          dayjs(f.date_created).isAfter(dayjs().subtract(10, 'day')),
+          dayjs(f.date_created).isAfter(dayjs().subtract(1, 'day')),
       );
 
       console.log(`Found ${pending.length} pending flights to sync shipments`);
@@ -963,6 +963,84 @@ export class FleetService {
       };
     } catch (error) {
       console.error('Error fetching shipments:', error);
+      const errMsg =
+        error.response?.message || error.message || 'Unknown error';
+      const code = error.status || 500;
+      throwException(code, errMsg);
+    }
+  }
+
+  //Function to hit the shipment ulr to make it out for delivery
+  async markShipmentOutForDelivery(shipmentId: string) {
+    const token = process.env.SHIPMENT_API_KEY;
+    if (!token)
+      throw new InternalServerErrorException('SHIPMENT_API_KEY missing');
+
+    try {
+      const resp = await fetch(
+        `https://lapp.techeagle.in/api/v1/user/shipment/outForDelivery`,
+        {
+          method: 'PUT',
+          headers: { Authorization: token, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            AWB: shipmentId,
+            otpRequired: false,
+          }),
+        },
+      );
+
+      if (!resp.ok) {
+        const txt = await resp.text();
+        throw new InternalServerErrorException(
+          `Shipment API error (${resp.status}): ${txt}`,
+        );
+      }
+
+      return {
+        status: 'success',
+        message: `Shipment ${shipmentId} marked out for delivery successfully`,
+      };
+    } catch (error) {
+      console.error('Error marking shipment out for delivery:', error);
+      const errMsg =
+        error.response?.message || error.message || 'Unknown error';
+      const code = error.status || 500;
+      throwException(code, errMsg);
+    }
+  }
+
+  //Function to hit the shipment ulr to mark it as delivered  
+  async markShipmentDelivered(body: DeliveryDetailsDto) {
+    const token = process.env.SHIPMENT_API_KEY;
+    if (!token)
+      throw new InternalServerErrorException('SHIPMENT_API_KEY missing');
+
+    try {
+      const resp = await fetch(
+        `https://lapp.techeagle.in/api/v1/user/shipment/Delivered`,
+        {
+          method: 'PUT',
+          headers: { Authorization: token, 'Content-Type': 'application/json' },
+          body: JSON.stringify(
+            body
+          ),
+        },
+      );
+
+      if (!resp.ok) {
+        const txt = await resp.text();
+        
+        throw new InternalServerErrorException(
+          `Shipment API error (${resp.status}): ${txt}`,
+        );
+      }
+
+      return {
+        status: 'success',
+        message: `Shipment ${body.AWB} marked as delivered successfully`,
+      };
+    } catch (error) {
+      console.error('Error marking shipment as delivered:', error);
       const errMsg =
         error.response?.message || error.message || 'Unknown error';
       const code = error.status || 500;

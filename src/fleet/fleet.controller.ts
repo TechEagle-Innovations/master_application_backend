@@ -10,12 +10,14 @@ import {
   Query,
   UnauthorizedException,
   BadRequestException,
+  Put,
 } from '@nestjs/common';
 import { FleetService } from './fleet.service';
 import { UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/user/guards/jwt-auth.guard';
 import { Req } from '@nestjs/common';
 import { Request } from 'express';
+import { DeliveryDetailsDto } from './dto/update-fleet.dto';
 
 @Controller('fleet')
 export class FleetController {
@@ -112,6 +114,20 @@ async list(@Req() req: Request) {
   @Get('flight-shipments/:id')
 async shipmentForFlight(@Param('id') id: string,@Req() req: Request) {
   const result = await this.fleetService.shipmentsForFlight(id, req);
+  return result;
+}
+
+@UseGuards(JwtAuthGuard)
+  @Put('shipment-ofd/:id')
+async outForDelivery(@Param('id') id: string,@Req() req: Request) {
+  const result = await this.fleetService.markShipmentOutForDelivery(id);
+  return result;
+}
+
+@UseGuards(JwtAuthGuard)
+  @Put('shipment-delivery')
+async delivered(@Body() data: DeliveryDetailsDto,@Req() req: Request) {
+  const result = await this.fleetService.markShipmentDelivered(data);
   return result;
 }
 
