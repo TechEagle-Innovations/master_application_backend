@@ -223,7 +223,7 @@ export class FleetService {
     try {
       socket = io(url, {
         auth: { token: userJwt, page: 'monitor-all-drones' },
-        transports: ['websocket'],
+        transports: ['polling', 'websocket'],
         timeout: 5000,
         reconnectionAttempts: 1,
       });
@@ -602,7 +602,7 @@ export class FleetService {
     try {
       socket = io(url, {
         auth: { token: userJwt, page: 'monitor-all-drones' },
-        transports: ['websocket'],
+        transports: ['polling', 'websocket'],
         timeout: 5000,
         reconnectionAttempts: 1,
       });
